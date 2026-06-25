@@ -1,0 +1,3473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --cream:#faf8f4; --paper:#f0ede6; --ink:#1a1814; --mid:#6b6760;
+  --rule:#d8d4cc; --accent:#d45f2e; --green:#2d7a4f; --blue:#2a5fb0;
+  --red:#c0392b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;line-height:1.55;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--ink);color:var(--cream);text-align:center;font-size:.75rem;letter-spacing:.05em;padding:7px 16px;font-weight:500;}
+.topbar span{color:#f7c06a;}
+.dot-live{display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;margin-right:5px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+/* ── NEWS TICKER ── */
+.news-ticker{background:var(--paper);border-bottom:1.5px solid var(--ink);display:flex;align-items:stretch;overflow:hidden;height:34px;}
+.ticker-label{background:var(--ink);color:var(--cream);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:6px;padding:0 14px;flex-shrink:0;white-space:nowrap;z-index:2;}
+.ticker-track-wrap{flex:1;overflow:hidden;position:relative;display:flex;align-items:center;}
+.ticker-track{display:flex;align-items:center;white-space:nowrap;animation:ticker-scroll 32s linear infinite;will-change:transform;}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes ticker-scroll{
+  from{ transform:translateX(-100%); }
+  to{ transform:translateX(100%); }
+}
+.ticker-item{font-size:.78rem;color:var(--ink);padding:0 28px;display:inline-flex;align-items:center;gap:8px;}
+.ticker-item::before{content:'●';color:var(--accent);font-size:.55rem;}
+
+/* ── NAV ── */
+nav{border-bottom:1.5px solid var(--ink);padding:0 24px;display:flex;align-items:center;position:sticky;top:0;background:var(--cream);z-index:50;overflow:hidden;}
+.nav-logo{font-family:'Instrument Serif',serif;font-size:1.2rem;padding:13px 24px 13px 0;border-right:1px solid var(--rule);margin-right:8px;text-decoration:none;color:var(--ink);}
+.nav-links{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.nav-links a{font-size:.72rem;font-weight:600;color:var(--mid);text-decoration:none;padding:15px 13px;border-right:1px solid var(--rule);transition:color .15s,background .15s;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;}
+.nav-links a:first-child{border-left:1px solid var(--rule);}
+.nav-links a:hover,.nav-links a.active{color:var(--ink);background:var(--paper);}
+.nav-right{margin-left:auto;font-size:.72rem;color:var(--mid);letter-spacing:.04em;text-transform:uppercase;padding-left:16px;border-left:1px solid var(--rule);display:flex;align-items:center;gap:10px;}
+.btn-admin-nav{font-size:.7rem;font-weight:600;padding:5px 12px;border:1px solid var(--rule);background:transparent;color:var(--mid);cursor:pointer;text-transform:uppercase;letter-spacing:.05em;transition:all .15s;}
+.btn-admin-nav:hover{border-color:var(--ink);color:var(--ink);}
+.btn-admin-nav.active-admin{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border:1.5px solid var(--ink);background:transparent;text-decoration:none;transition:background .15s,color .15s,transform .1s;letter-spacing:.02em;white-space:nowrap;}
+.btn:hover{transform:translateY(-1px);}
+.btn-fill{background:var(--ink);color:var(--cream);}
+.btn-fill:hover{background:#333;}
+.btn-ghost{color:var(--ink);}
+.btn-ghost:hover{background:var(--paper);}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-accent:hover{background:#bb5226;border-color:#bb5226;}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-green:hover{background:#236040;}
+.btn-danger{background:#fbe9e3;color:var(--red);border-color:#e8b4a8;}
+.btn-danger:hover{background:#f5cfc5;}
+.btn-sm{padding:6px 13px;font-size:.74rem;}
+.btn-xs{padding:4px 9px;font-size:.7rem;}
+
+/* ═══════════════════════════════
+   PUBLIC SITE
+═══════════════════════════════ */
+#publicSite{display:block;}
+
+/* ── PAGE VIEWS (cada sección es una página independiente) ── */
+.page-view{display:none;}
+.page-view.active{display:block;animation:page-fade .25s ease both;}
+@keyframes page-fade{from{opacity:0;}to{opacity:1;}}
+
+/* ── DESCARGAS DESACTIVADAS (oculta botones de descarga al público) ── */
+body.downloads-off #publicSite .download-btn,
+body.downloads-off #detailScreen .download-btn,
+body.downloads-off .modal-head .download-btn{display:none!important;}
+
+/* ── HERO NEW (bassedastech style) ── */
+.hero{border-bottom:1.5px solid var(--ink);padding:24px 16px 0;}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:var(--green);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 11px;margin-bottom:18px;}
+.hero-badge .dot-live{background:#fff;margin-right:0;}
+h1{font-family:'Inter',sans-serif;font-size:clamp(2.4rem,9vw,3.6rem);line-height:1.04;letter-spacing:-.03em;font-weight:800;margin-bottom:0;}
+h1 em{font-style:normal;color:var(--ink);background:#c5f04a;padding:0 4px;}
+.hero-ctas{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0;}
+.btn-hero-primary{background:var(--accent);color:#fff;border-color:var(--accent);font-size:.88rem;padding:12px 22px;font-weight:700;letter-spacing:.01em;}
+.btn-hero-primary:hover{background:#bb5226;border-color:#bb5226;}
+.btn-hero-ghost{background:transparent;color:var(--ink);border-color:var(--ink);font-size:.88rem;padding:12px 22px;font-weight:600;}
+.btn-hero-ghost:hover{background:var(--paper);}
+
+/* ── HOW IT WORKS BOX ── */
+.how-box{border:1.5px solid var(--ink);margin:24px 0 0;background:var(--cream);}
+.how-box-head{background:var(--ink);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:8px 14px;}
+.how-box-head-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.how-box-head-tag{font-size:.62rem;background:#2a5fb0;color:#fff;padding:2px 8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.how-steps{list-style:none;border-bottom:1px solid var(--rule);}
+.how-step{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid var(--rule);}
+.how-step:last-child{border-bottom:none;}
+.how-step-n{font-size:.68rem;font-weight:800;color:var(--accent);flex-shrink:0;width:22px;}
+.how-step-text{font-size:.82rem;color:var(--ink);line-height:1.4;}
+.how-box-footer{background:#f5fce8;border-top:1.5px solid var(--ink);padding:9px 14px;font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink);text-align:center;}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);margin-top:24px;}
+.stat-cell{padding:16px 10px;border-right:1px solid var(--rule);text-align:center;}
+.stat-cell:last-child{border-right:none;}
+.stat-label-top{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mid);margin-bottom:4px;font-weight:600;}
+.stat-n{font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:800;line-height:1;}
+.stat-n.red{color:var(--accent);}
+
+/* ── CATALOG PREVIEW STRIP ── */
+.cat-strip{padding:24px 0;border-bottom:1.5px solid var(--ink);}
+.cat-strip-scroll{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 16px;}
+.cat-strip-card{flex-shrink:0;width:140px;height:100px;border:1px solid var(--rule);background:var(--paper);margin-right:10px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cat-strip-card iframe{width:400%;height:400%;transform:scale(.25);transform-origin:top left;border:none;pointer-events:none;position:absolute;top:0;left:0;}
+.cat-strip-card-empty{font-size:1.8rem;opacity:.25;}
+
+/* ── HOW IT WORKS BOTTOM (3 cols) ── */
+.how3{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1.5px solid var(--ink);}
+.how3-item{padding:22px 16px;border-right:1px solid var(--rule);}
+.how3-item:last-child{border-right:none;}
+.how3-label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
+.how3-step{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.how3-title{font-size:.92rem;font-weight:800;margin-bottom:5px;}
+.how3-desc{font-size:.78rem;color:var(--mid);line-height:1.5;}
+
+/* SECTION */
+.section{border-bottom:1.5px solid var(--ink);padding:52px 24px;}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:36px;}
+.sec-num{font-family:'Instrument Serif',serif;font-size:.95rem;color:var(--mid);}
+.sec-title{font-family:'Instrument Serif',serif;font-size:1.75rem;letter-spacing:-.02em;line-height:1;}
+.sec-rule{flex:1;height:1px;background:var(--rule);margin-left:6px;}
+.sec-sub{font-size:.72rem;color:var(--mid);text-transform:uppercase;letter-spacing:.08em;}
+
+/* STEPS (legacy, keep for compat) */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);}
+.step{padding:28px 24px;border-right:1px solid var(--rule);}
+.step:last-child{border-right:none;}
+.step-n{font-family:'Instrument Serif',serif;font-size:3.2rem;color:var(--rule);margin-bottom:14px;line-height:1;}
+.step h3{font-size:.95rem;font-weight:700;margin-bottom:7px;}
+.step p{font-size:.86rem;color:var(--mid);line-height:1.6;}
+
+/* eyebrow (legacy) */
+.eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';display:inline-block;width:22px;height:1px;background:var(--mid);}
+.hero-desc{color:var(--mid);max-width:400px;line-height:1.65;font-size:.93rem;}
+
+/* ── CATALOG PAGE HEADER ── */
+.cat-page-header{padding:20px 16px 0;}
+.cat-page-badge{display:inline-flex;align-items:center;gap:7px;background:var(--green);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;margin-bottom:14px;}
+.cat-page-title{font-family:'Inter',sans-serif;font-size:clamp(2rem,7vw,2.8rem);font-weight:800;line-height:1.06;letter-spacing:-.03em;margin-bottom:10px;}
+.cat-page-title em{font-style:normal;background:#c5f04a;padding:0 4px;}
+.cat-page-desc{font-size:.84rem;color:var(--mid);line-height:1.5;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cat-page-desc .ctag-blue{font-size:.62rem;font-weight:700;padding:2px 8px;background:#2a5fb0;color:#fff;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:4px;}
+
+/* ── SEARCH & FILTERS ── */
+.cat-filters{padding:0 16px 16px;border-bottom:1.5px solid var(--ink);}
+.cat-search-wrap{position:relative;margin-bottom:10px;}
+.cat-search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mid);width:15px;height:15px;flex-shrink:0;}
+.cat-search-f{width:100%;padding:11px 14px 11px 36px;border:1.5px solid var(--ink);font-family:'Inter',sans-serif;font-size:.86rem;color:var(--ink);background:var(--cream);outline:none;transition:box-shadow .15s;}
+.cat-search-f:focus{box-shadow:0 0 0 3px rgba(26,24,20,.08);}
+.cat-selects{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cat-sel{width:100%;padding:9px 12px;border:1.5px solid var(--ink);font-family:'Inter',sans-serif;font-size:.8rem;color:var(--ink);background:var(--cream);outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231a1814' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer;}
+.cat-results-bar{padding:10px 16px;border-bottom:1.5px solid var(--ink);font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--rule);}
+
+/* ── CARD ── */
+.card{border:none;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--cream);display:flex;flex-direction:column;cursor:pointer;overflow:hidden;animation:card-pop .3s ease both;transition:background .15s;}
+.card:nth-child(2n){border-right:none;}
+.card:hover{background:var(--paper);}
+@keyframes card-pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* card top bar */
+.card-win-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--rule);}
+.win-dots{display:flex;gap:4px;}
+.win-dots span{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.win-dots span:nth-child(1){background:#e0605a;}
+.win-dots span:nth-child(2){background:#e0b85a;}
+.win-dots span:nth-child(3){background:#5ab06a;}
+.card-ref{font-size:.62rem;color:var(--mid);font-family:monospace;}
+
+/* card thumbnail — tall, live preview */
+.card-thumb{height:200px;background:var(--paper);border-bottom:1px solid var(--rule);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;}
+.card-thumb-icon{font-size:2rem;opacity:.3;}
+.card-thumb iframe{width:300%;height:300%;transform:scale(.333);transform-origin:top left;border:none;pointer-events:none;position:absolute;top:0;left:0;}
+
+/* category tag inside thumb */
+.card-cat-thumb{position:absolute;bottom:8px;left:8px;}
+
+/* card body */
+.card-body{padding:10px 10px 12px;flex:1;display:flex;flex-direction:column;}
+.card-meta-top{font-size:.6rem;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.card-status-dot{color:var(--green);font-weight:700;display:flex;align-items:center;gap:3px;}
+.card-status-dot::before{content:'●';font-size:.5rem;}
+.card-name{font-weight:800;font-size:.88rem;margin-bottom:4px;line-height:1.25;}
+.card-desc{font-size:.76rem;color:var(--mid);line-height:1.45;flex:1;margin-bottom:10px;}
+.card-actions{display:flex;gap:5px;align-items:center;justify-content:space-between;}
+.card-link{font-size:.68rem;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;text-decoration:underline;background:none;border:none;cursor:pointer;padding:0;font-family:'Inter',sans-serif;}
+.card-open-btn{font-size:.72rem;font-weight:700;padding:5px 12px;background:transparent;border:1.5px solid var(--ink);color:var(--ink);cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.02em;transition:background .12s,color .12s;}
+.card-open-btn:hover{background:var(--ink);color:var(--cream);}
+
+/* ctag */
+.ctag{font-size:.6rem;font-weight:700;padding:2px 7px;background:var(--ink);color:var(--cream);text-transform:uppercase;letter-spacing:.04em;}
+
+/* ── CARD DETAIL BLOCK (bassedastech style) ── */
+.card-detail{padding:10px 10px 0;border-top:1px solid var(--rule);}
+.card-eyebrow{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:3px;}
+.card-meta-line{font-size:.6rem;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;gap:5px;flex-wrap:wrap;}
+.card-title-big{font-family:'Instrument Serif',serif;font-size:1.1rem;letter-spacing:-.02em;line-height:1.1;margin-bottom:5px;}
+.card-detail-desc{font-size:.76rem;color:var(--mid);line-height:1.5;margin-bottom:8px;}
+.card-spec-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);margin-bottom:8px;}
+.card-spec-cell{padding:5px 8px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.card-spec-cell:nth-child(2n){border-right:none;}
+.card-spec-cell:nth-last-child(-n+2){border-bottom:none;}
+.card-spec-l{font-size:.52rem;color:var(--mid);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;font-weight:700;}
+.card-spec-v{font-size:.72rem;font-weight:700;}
+.card-spec-v.accent{color:var(--accent);}
+.card-steps-mini{border-top:1px solid var(--rule);margin:0 -10px;}
+.card-step-mini{display:flex;gap:7px;padding:6px 10px;border-bottom:1px solid var(--rule);}
+.card-step-mini:last-child{border-bottom:none;}
+.card-step-n-mini{font-size:.62rem;font-weight:800;color:var(--accent);flex-shrink:0;width:18px;}
+.card-step-body-mini h5{font-size:.72rem;font-weight:700;margin:0 0 1px;}
+.card-step-body-mini p{font-size:.67rem;color:var(--mid);line-height:1.4;margin:0;}
+
+/* empty state */
+.empty{display:none;text-align:center;padding:60px 20px;color:var(--mid);grid-column:span 2;}
+.empty-icon{font-size:2.5rem;display:block;margin-bottom:12px;opacity:.4;}
+.empty h3{font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.empty p{font-size:.84rem;max-width:280px;margin:0 auto;}
+
+/* ── NOTES SECTION ── */
+.notes-box{border:1.5px solid var(--ink);background:var(--cream);}
+.notes-input-row{display:flex;gap:8px;padding:18px;border-bottom:1.5px solid var(--ink);background:var(--paper);flex-wrap:wrap;}
+.notes-input{flex:1;min-width:200px;padding:10px 12px;background:var(--cream);border:1.5px solid var(--rule);font-family:'Inter',sans-serif;font-size:.85rem;color:var(--ink);outline:none;resize:vertical;min-height:42px;transition:border-color .15s;}
+.notes-input:focus{border-color:var(--ink);}
+.notes-list{list-style:none;}
+.note-item{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule);}
+.note-item:last-child{border-bottom:none;}
+.note-text{flex:1;font-size:.88rem;line-height:1.5;word-break:break-word;white-space:pre-wrap;}
+.note-date{font-size:.68rem;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;display:block;}
+.notes-empty{display:none;text-align:center;padding:50px 20px;color:var(--mid);}
+.notes-empty-icon{font-size:2.4rem;display:block;margin-bottom:10px;opacity:.4;}
+@media(max-width:600px){.notes-input-row{flex-direction:column;}.notes-input-row .btn{width:100%;justify-content:center;}}
+
+/* FOOTER */
+footer{padding:28px 24px;border-top:1.5px solid var(--ink);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.78rem;color:var(--mid);}
+.foot-logo{font-family:'Instrument Serif',serif;font-size:1.05rem;color:var(--ink);}
+
+/* ═══════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════ */
+/* ═══════════════════════════════
+   COUNTDOWN SCREEN
+═══════════════════════════════ */
+/* ═══════════════════════════════
+   DETAIL PAGE
+═══════════════════════════════ */
+#detailScreen{display:none;}
+.detail-wrap{max-width:720px;margin:0 auto;padding:40px 24px 80px;overflow-x:hidden;box-sizing:border-box;}
+@media(max-width:600px){.detail-wrap{padding:28px 16px 60px;}}
+.detail-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.detail-meta-line{font-size:.74rem;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;}
+.detail-title{font-family:'Instrument Serif',serif;font-size:2.2rem;letter-spacing:-.02em;line-height:1.05;margin-bottom:16px;}
+.detail-desc{color:var(--mid);font-size:.95rem;line-height:1.65;margin-bottom:24px;max-width:600px;}
+.detail-quote{border-left:3px solid var(--accent);padding:8px 16px;font-style:italic;color:var(--ink);margin-bottom:28px;font-size:.9rem;}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);margin-bottom:32px;width:100%;box-sizing:border-box;overflow:hidden;}
+.spec-cell{padding:15px 18px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.spec-cell:nth-child(2n){border-right:none;}
+.spec-cell:nth-last-child(-n+2){border-bottom:none;}
+.spec-l{font-size:.62rem;color:var(--mid);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px;font-weight:700;}
+.spec-v{font-size:.9rem;font-weight:700;}
+.spec-v.accent{color:var(--accent);}
+@media(max-width:480px){
+  .spec-grid{grid-template-columns:1fr;}
+  .spec-cell{border-right:none !important;}
+  .spec-cell:nth-last-child(-n+2){border-bottom:1px solid var(--rule);}
+  .spec-cell:last-child{border-bottom:none;}
+}
+
+.detail-section-title{font-family:'Instrument Serif',serif;font-size:1.5rem;margin:36px 0 18px;letter-spacing:-.02em;}
+.detail-steps{border-top:1px solid var(--rule);}
+.detail-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.detail-step-n{font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--accent);flex-shrink:0;width:34px;}
+.detail-step-body h4{font-size:.92rem;font-weight:700;margin-bottom:4px;}
+.detail-step-body p{font-size:.84rem;color:var(--mid);line-height:1.55;}
+
+/* ── CUSTOMIZE BOX ── */
+.customize-box{
+  border:1.5px solid var(--ink);
+  background:var(--paper);
+  margin-top:28px;
+  overflow:hidden;
+  box-sizing:border-box;
+  width:100%;
+}
+.customize-box-head{
+  padding:18px 22px 16px;
+  border-bottom:1.5px solid var(--ink);
+  background:var(--ink);
+}
+.customize-box-head h3{
+  font-family:'Instrument Serif',serif;
+  font-size:1.25rem;
+  color:var(--cream);
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:4px;
+}
+.customize-box-head>p{
+  font-size:.78rem;color:#a39e92;line-height:1.5;margin:0;
+}
+.customize-box-body{padding:22px 22px 0;}
+.customize-box-footer{padding:0 22px 22px;}
+
+/* Field grid */
+.cf-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px 16px;
+  margin-bottom:16px;
+  width:100%;
+  box-sizing:border-box;
+}
+.cf-row{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.cf-row label{
+  font-size:.66rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--mid);
+  display:flex;align-items:center;gap:6px;
+}
+.cf-row label .lbadge{
+  font-size:.58rem;padding:2px 6px;
+  background:var(--rule);color:var(--mid);
+  letter-spacing:.02em;text-transform:none;font-weight:500;flex-shrink:0;
+}
+.cf-row input,.cf-row textarea{
+  padding:10px 12px;
+  background:var(--cream);
+  border:1.5px solid var(--rule);
+  font-family:'Inter',sans-serif;font-size:.84rem;color:var(--ink);
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+  resize:vertical;width:100%;box-sizing:border-box;min-width:0;
+  line-height:1.5;
+}
+.cf-row input:focus,.cf-row textarea:focus{
+  border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,24,20,.06);
+}
+.cf-row input.changed,.cf-row textarea.changed{
+  border-color:var(--accent);background:#fffaf8;
+  box-shadow:0 0 0 3px rgba(212,95,46,.06);
+}
+
+/* Divider inside box */
+.cf-divider{height:1px;background:var(--rule);margin:18px 0;}
+
+/* Actions row */
+.customize-actions{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;
+}
+
+/* Preview wrap */
+.customize-preview-wrap{
+  border:1.5px solid var(--ink);margin-bottom:18px;
+  background:var(--cream);display:none;
+  overflow:hidden;width:100%;box-sizing:border-box;
+  border-radius:0;
+}
+.customize-preview-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--paper);border-bottom:1px solid var(--rule);
+  font-size:.68rem;color:var(--mid);font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.customize-preview-bar .preview-dots{display:flex;gap:4px;}
+.customize-preview-bar .preview-dots span{width:7px;height:7px;border-radius:50%;}
+.customize-preview-bar .preview-dots span:nth-child(1){background:#e0605a;}
+.customize-preview-bar .preview-dots span:nth-child(2){background:#e0b85a;}
+.customize-preview-bar .preview-dots span:nth-child(3){background:#5ab06a;}
+.customize-preview-wrap iframe{width:100%;height:340px;border:none;display:block;}
+
+/* Download button */
+.detail-download-btn{
+  width:100%;justify-content:center;
+  font-size:.88rem;padding:15px 20px;
+  box-sizing:border-box;display:flex;max-width:100%;
+  gap:10px;letter-spacing:.04em;
+  background:var(--ink);color:var(--cream);border-color:var(--ink);
+  transition:background .15s,transform .1s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.detail-download-btn:hover{
+  background:#111;transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(26,24,20,.25);
+}
+.detail-download-btn:active{transform:translateY(0);}
+
+/* Reset / small links */
+.cf-reset{
+  background:none;border:none;font-size:.72rem;color:var(--mid);
+  cursor:pointer;text-decoration:underline;padding:0;
+  font-family:'Inter',sans-serif;transition:color .15s;
+}
+.cf-reset:hover{color:var(--ink);}
+.cf-changed-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;opacity:0;transition:opacity .2s;
+}
+.cf-changed-dot.visible{opacity:1;}
+.cf-footer-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;padding-top:4px;
+}
+.cf-counter{font-size:.7rem;color:var(--mid);}
+
+@media(max-width:520px){
+  .cf-grid{grid-template-columns:1fr;}
+  .customize-box-head,.customize-box-body,.customize-box-footer{padding-left:16px;padding-right:16px;}
+}
+
+/* ═══════════════════════════════
+   DOWNLOAD ANIMATION MODAL — PREMIUM
+═══════════════════════════════ */
+.dl-modal-bg{position:fixed;inset:0;background:rgba(10,9,7,.88);z-index:400;display:none;place-items:center;padding:16px;backdrop-filter:blur(8px);}
+.dl-modal-bg.open{display:grid;animation:dl-bg-in .3s ease both;}
+@keyframes dl-bg-in{from{opacity:0;}to{opacity:1;}}
+.dl-modal{
+  background:var(--ink);color:var(--cream);
+  border:1.5px solid #3a352b;
+  width:100%;max-width:380px;
+  overflow:hidden;
+  animation:dl-modal-in .35s cubic-bezier(.16,1,.3,1) both;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+  position:relative;
+}
+@keyframes dl-modal-in{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* top accent bar */
+.dl-accent-bar{height:3px;background:linear-gradient(90deg,var(--accent),#f7c06a,var(--green));width:0%;transition:width .25s ease;}
+
+/* header */
+.dl-head{padding:22px 22px 14px;border-bottom:1px solid #2a2620;}
+.dl-badge{display:inline-flex;align-items:center;gap:6px;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f7c06a;margin-bottom:10px;}
+.dl-badge-dot{width:6px;height:6px;border-radius:50%;background:#f7c06a;animation:pulse 1.4s infinite;}
+.dl-title{font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--cream);margin-bottom:3px;line-height:1.1;}
+.dl-sub{font-size:.72rem;color:#6b6760;line-height:1.5;}
+
+/* big percentage */
+.dl-pct-wrap{padding:18px 22px 0;display:flex;align-items:flex-end;gap:10px;}
+.dl-pct{font-family:'Instrument Serif',serif;font-size:3.2rem;color:var(--cream);line-height:1;transition:all .1s;}
+.dl-pct-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b6760;margin-bottom:10px;}
+
+/* bar */
+.dl-bar-outer{margin:10px 22px 0;height:3px;background:#2a2620;overflow:hidden;}
+.dl-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#f7c06a);transition:width .2s ease;}
+
+/* steps */
+.dl-options{list-style:none;margin:14px 0 0;border-top:1px solid #2a2620;}
+.dl-opt{display:flex;align-items:center;gap:12px;padding:11px 22px;font-size:.8rem;color:#6b6760;border-bottom:1px solid #1e1b17;transition:color .35s,background .35s;position:relative;overflow:hidden;}
+.dl-opt:last-child{border-bottom:none;}
+.dl-opt-icon{font-size:.75rem;width:20px;height:20px;border-radius:50%;border:1px solid #2a2620;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .35s;font-style:normal;}
+.dl-opt-text{flex:1;transition:color .35s;}
+.dl-opt-check{font-size:.7rem;color:var(--green);opacity:0;transition:opacity .3s;margin-left:auto;}
+
+/* active step */
+.dl-opt.active{color:#a39e92;}
+.dl-opt.active .dl-opt-icon{border-color:#f7c06a;color:#f7c06a;background:rgba(247,192,106,.08);}
+
+/* done step */
+.dl-opt.done{color:#a39e92;}
+.dl-opt.done .dl-opt-icon{background:var(--green);border-color:var(--green);color:#fff;}
+.dl-opt.done .dl-opt-check{opacity:1;}
+.dl-opt.done::after{content:'';position:absolute;inset:0;background:rgba(45,122,79,.04);}
+
+/* success state */
+.dl-modal.success .dl-pct{color:#5cb87a;}
+.dl-success-msg{display:none;text-align:center;padding:18px 22px 22px;border-top:1px solid #2a2620;}
+.dl-modal.success .dl-success-msg{display:block;}
+.dl-modal.success .dl-options{opacity:.5;}
+.dl-success-icon{font-size:2rem;display:block;margin-bottom:6px;}
+.dl-success-title{font-family:'Instrument Serif',serif;font-size:1.1rem;color:var(--cream);margin-bottom:4px;}
+.dl-success-hint{font-size:.72rem;color:#6b6760;line-height:1.5;}
+
+/* countdown text */
+.dl-count{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#3a352b;text-align:center;padding:10px 22px 18px;}
+
+#countdownScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--ink);text-align:center;padding:24px;}
+.cd-box{max-width:480px;}
+.cd-eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f7c06a;margin-bottom:24px;}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.cd-unit{background:#26221c;border:1px solid #3a352b;padding:18px 8px;}
+.cd-n{font-family:'Instrument Serif',serif;font-size:2.3rem;color:var(--cream);line-height:1;}
+.cd-l{font-size:.66rem;color:#a39e92;text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
+.cd-sub{font-size:.82rem;color:#a39e92;line-height:1.5;}
+.cd-admin-btn{margin-top:28px;background:transparent;border:1px solid rgba(255,255,255,.18);color:#a39e92;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:9px 20px;cursor:pointer;transition:border-color .2s,color .2s;}
+.cd-admin-btn:hover{border-color:rgba(255,255,255,.45);color:var(--cream);}
+
+#loginScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--ink);}
+.login-box{background:var(--cream);border:1.5px solid #333;padding:0;width:100%;max-width:400px;animation:card-pop .3s ease;}
+.login-head{border-bottom:1.5px solid var(--ink);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;}
+.login-head-title{font-family:'Instrument Serif',serif;font-size:1.2rem;}
+.login-badge{font-size:.68rem;font-weight:600;padding:3px 9px;background:var(--ink);color:var(--cream);letter-spacing:.06em;text-transform:uppercase;}
+.login-body{padding:28px 24px;display:flex;flex-direction:column;gap:16px;}
+.field-label{font-size:.74rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;color:var(--mid);}
+.field-input{width:100%;padding:10px 13px;background:var(--paper);border:1px solid var(--rule);font-family:'Inter',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s;}
+.field-input:focus{border-color:var(--ink);}
+.login-error{font-size:.8rem;color:var(--red);display:none;padding:8px 12px;background:#fbe9e3;border:1px solid #e8b4a8;}
+.login-hint{font-size:.75rem;color:var(--mid);text-align:center;padding-top:4px;}
+.login-hint span{font-weight:600;color:var(--ink);}
+
+/* ═══════════════════════════════
+   ADMIN PANEL
+═══════════════════════════════ */
+#adminPanel{display:none;}
+.admin-topbar{background:var(--ink);color:var(--cream);padding:10px 24px;display:flex;align-items:center;gap:16px;border-bottom:1.5px solid #333;}
+.admin-topbar-title{font-family:'Instrument Serif',serif;font-size:1.1rem;flex:1;}
+.admin-topbar .badge-admin{font-size:.68rem;font-weight:600;padding:3px 9px;background:var(--accent);letter-spacing:.06em;text-transform:uppercase;}
+
+.admin-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 48px);}
+.admin-sidebar{border-right:1.5px solid var(--ink);padding:0;background:var(--paper);}
+.sidebar-section{border-bottom:1px solid var(--rule);}
+.sidebar-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);padding:14px 18px 8px;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:.83rem;font-weight:500;cursor:pointer;border-left:2.5px solid transparent;transition:all .15s;color:var(--ink);}
+.sidebar-item:hover{background:var(--cream);border-left-color:var(--rule);}
+.sidebar-item.active{background:var(--cream);border-left-color:var(--ink);font-weight:700;}
+.sidebar-icon{font-size:1rem;width:20px;text-align:center;}
+
+.admin-content{padding:32px;overflow-y:auto;}
+.admin-view{display:none;}
+.admin-view.active{display:block;}
+
+/* ── ADMIN MOBILE BOTTOM NAV ── */
+.admin-bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--cream);border-top:1.5px solid var(--ink);
+  z-index:100;
+  padding:0;
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+.admin-bottom-nav-inner{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  height:60px;
+}
+.abn-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;
+  font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--mid);transition:color .15s,background .15s;
+  border-right:1px solid var(--rule);
+  padding:8px 4px;
+  -webkit-tap-highlight-color:transparent;
+}
+.abn-item:last-child{border-right:none;}
+.abn-item:hover,.abn-item.active{color:var(--ink);background:var(--paper);}
+.abn-item.active{color:var(--ink);}
+.abn-icon{font-size:1.25rem;line-height:1;}
+.abn-exit{color:var(--red);}
+.abn-exit:hover{background:#fbe9e3;}
+
+/* ── ADMIN HEADER ── */
+.admin-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:12px;padding-bottom:20px;border-bottom:1.5px solid var(--ink);}
+.admin-page-title{font-family:'Instrument Serif',serif;font-size:1.6rem;letter-spacing:-.02em;}
+.admin-page-sub{font-size:.8rem;color:var(--mid);margin-top:2px;}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1.5px solid var(--ink);margin-bottom:28px;}
+.stat-box{padding:18px 20px;border-right:1px solid var(--rule);}
+.stat-box:last-child{border-right:none;}
+.stat-box .n{font-family:'Instrument Serif',serif;font-size:2rem;line-height:1;}
+.stat-box .l{font-size:.72rem;color:var(--mid);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
+
+/* UPLOAD AREA */
+.drop-area{border:2px dashed var(--rule);padding:44px 28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--paper);margin-bottom:16px;}
+.drop-area:hover,.drop-area.over{border-color:var(--ink);background:#e8e5df;}
+.drop-area .d-icon{font-size:2.4rem;display:block;margin-bottom:12px;}
+.drop-area .d-title{font-weight:700;font-size:.95rem;margin-bottom:5px;}
+.drop-area .d-sub{font-size:.82rem;color:var(--mid);margin-bottom:16px;}
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+.chip{font-size:.7rem;font-weight:600;padding:3px 9px;border:1px solid currentColor;letter-spacing:.05em;}
+.chip-h{color:var(--accent);}.chip-c{color:var(--blue);}.chip-j{color:#7a5f00;}
+#adminFileInput{display:none;}
+.prog-bar{height:2px;background:var(--accent);width:0%;transition:width .35s;display:none;margin-bottom:2px;}
+
+/* STAGING TABLE */
+.staging-box{display:none;border:1.5px solid var(--ink);background:var(--cream);}
+.staging-box-head{display:flex;align-items:center;justify-content:space-between;padding:9px 15px;border-bottom:1px solid var(--rule);font-size:.8rem;font-weight:700;}
+.s-list{list-style:none;}
+.s-item{display:flex;align-items:center;gap:9px;padding:8px 15px;border-bottom:1px solid var(--rule);font-size:.8rem;animation:card-pop .2s ease;}
+.s-item:last-child{border-bottom:none;}
+.x-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.x-h{background:var(--accent);}.x-c{background:var(--blue);}.x-j{background:#c49a00;}.x-o{background:var(--mid);}
+.s-nm{flex:1;font-weight:500;}
+.s-sz{color:var(--mid);font-size:.74rem;min-width:50px;text-align:right;}
+.s-rm{background:none;border:none;color:var(--mid);cursor:pointer;font-size:.95rem;transition:color .15s;}
+.s-rm:hover{color:var(--red);}
+.staging-foot{padding:13px 15px;border-top:1px solid var(--rule);display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+.input-f{flex:1;min-width:150px;padding:9px 12px;background:var(--paper);border:1px solid var(--rule);font-family:'Inter',sans-serif;font-size:.84rem;color:var(--ink);outline:none;transition:border-color .15s;}
+.input-f:focus{border-color:var(--ink);}
+.input-f::placeholder{color:var(--mid);}
+
+/* ADMIN PROJECT TABLE */
+.proj-table{width:100%;border-collapse:collapse;border:1.5px solid var(--ink);}
+.proj-table th{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;background:var(--paper);border-bottom:1.5px solid var(--ink);text-align:left;color:var(--mid);}
+.proj-table td{padding:11px 14px;border-bottom:1px solid var(--rule);font-size:.83rem;vertical-align:middle;}
+.proj-table tr:last-child td{border-bottom:none;}
+.proj-table tr:hover td{background:var(--paper);}
+.pub-badge{font-size:.65rem;font-weight:700;padding:2px 8px;text-transform:uppercase;letter-spacing:.06em;}
+.pub-yes{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+.pub-no{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+.pub-soon{background:#fff3cd;color:#856404;border:1px solid #ffc107;}
+
+/* ── COMING SOON CARD OVERLAY ── */
+.card.card-soon{cursor:default;}
+.card.card-soon:hover{transform:none;box-shadow:none;}
+.card-soon .card-thumb{position:relative;}
+.cs-overlay{position:absolute;inset:0;background:rgba(26,24,20,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.cs-lock{font-size:1.8rem;line-height:1;}
+.cs-badge{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;background:var(--accent);color:#fff;border:none;}
+.card-soon .card-body{opacity:.5;pointer-events:none;user-select:none;}
+.cs-notice{font-size:.75rem;color:var(--mid);text-align:center;padding:9px 14px;border-top:1px solid var(--rule);background:var(--paper);letter-spacing:.04em;text-transform:uppercase;}
+.cs-date{font-size:.7rem;color:#f7c06a;letter-spacing:.06em;text-transform:uppercase;margin-top:4px;}
+/* staging soon-date row */
+.soon-date-row{display:none;flex-direction:column;gap:4px;min-width:220px;}
+.soon-date-row label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mid);}
+/* email contact link in footer / card */
+.contact-link{color:var(--accent);text-decoration:none;font-size:.78rem;}
+.contact-link:hover{text-decoration:underline;}
+.thumb-mini{width:60px;height:40px;object-fit:cover;background:var(--paper);border:1px solid var(--rule);overflow:hidden;position:relative;flex-shrink:0;}
+.thumb-mini iframe{width:300%;height:300%;border:none;pointer-events:none;transform:scale(.333);transform-origin:top left;}
+.td-name{display:flex;align-items:center;gap:10px;}
+
+/* PASSWORD SETTINGS */
+.settings-card{border:1.5px solid var(--ink);background:var(--paper);max-width:480px;}
+.sc-head{padding:14px 18px;border-bottom:1px solid var(--rule);font-family:'Instrument Serif',serif;font-size:1.1rem;}
+.sc-body{padding:20px 18px;display:flex;flex-direction:column;gap:14px;}
+.sc-row{display:flex;flex-direction:column;gap:5px;}
+.sc-note{font-size:.78rem;color:var(--mid);line-height:1.5;padding:10px 12px;background:var(--cream);border:1px solid var(--rule);}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(20,18,14,.82);z-index:200;display:none;place-items:center;padding:16px;}
+.modal-bg.open{display:grid;}
+.modal{background:var(--cream);border:1.5px solid var(--ink);width:100%;max-width:960px;max-height:92vh;display:flex;flex-direction:column;animation:card-pop .22s ease;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1.5px solid var(--ink);gap:12px;}
+.modal-name{font-family:'Instrument Serif',serif;font-size:1.05rem;}
+.modal-close{background:none;border:1px solid var(--rule);font-size:.9rem;cursor:pointer;padding:4px 10px;color:var(--mid);transition:all .15s;}
+.modal-close:hover{border-color:var(--ink);color:var(--ink);}
+.modal-body{flex:1;min-height:0;}
+.modal-body iframe{width:100%;height:100%;min-height:500px;border:none;background:#fff;}
+.modal-foot{border-top:1.5px solid var(--ink);padding:9px 15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.url-pill{flex:1;font-size:.72rem;color:var(--mid);background:var(--paper);border:1px solid var(--rule);padding:7px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;font-family:monospace;transition:border-color .15s;}
+.url-pill:hover{border-color:var(--ink);}
+
+/* ── FILE MANAGER MODAL ── */
+.fm-modal-bg{position:fixed;inset:0;background:rgba(20,18,14,.82);z-index:300;display:none;place-items:center;padding:16px;backdrop-filter:blur(2px);}
+.fm-modal-bg.open{display:grid;}
+.fm-modal{background:var(--cream);border:1.5px solid var(--ink);width:100%;max-width:520px;animation:card-pop .22s ease;box-shadow:0 16px 40px rgba(0,0,0,.3);}
+.fm-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1.5px solid var(--ink);}
+.fm-title{font-family:'Instrument Serif',serif;font-size:1.1rem;}
+.fm-close{background:none;border:1px solid var(--rule);font-size:.9rem;cursor:pointer;padding:4px 10px;color:var(--mid);transition:all .15s;}
+.fm-close:hover{border-color:var(--ink);color:var(--ink);}
+.fm-body{padding:18px;}
+.fm-proj-name{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mid);margin-bottom:14px;}
+.fm-list{list-style:none;border:1.5px solid var(--ink);}
+.fm-item{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--rule);font-size:.82rem;animation:card-pop .2s ease;}
+.fm-item:last-child{border-bottom:none;}
+.fm-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.fm-name{flex:1;font-weight:500;word-break:break-all;}
+.fm-size{color:var(--mid);font-size:.72rem;min-width:52px;text-align:right;flex-shrink:0;}
+.fm-del{background:none;border:1px solid transparent;color:var(--mid);cursor:pointer;font-size:.85rem;padding:3px 7px;transition:all .15s;flex-shrink:0;}
+.fm-del:hover{color:var(--red);border-color:#e8b4a8;background:#fbe9e3;}
+.fm-empty{text-align:center;padding:28px;color:var(--mid);font-size:.84rem;}
+.fm-foot{padding:12px 18px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.74rem;color:var(--mid);}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--cream);font-size:.82rem;font-weight:500;padding:10px 18px;border-left:3px solid var(--accent);z-index:300;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:280px;}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.ok{border-left-color:var(--green);}
+#toast.err{border-left-color:var(--red);}
+
+/* ── FOOTER PRIVACY BUTTON ── */
+.foot-privacy-btn{background:none;border:none;font-size:.78rem;color:var(--mid);cursor:pointer;padding:0;font-family:'Inter',sans-serif;text-decoration:underline;text-underline-offset:2px;transition:color .15s;}
+.foot-privacy-btn:hover{color:var(--ink);}
+
+/* ── NFC INFO BOX ── */
+.nfc-box{border:1.5px solid var(--ink);margin:32px 0;overflow:hidden;width:100%;box-sizing:border-box;}
+.nfc-box-head{display:flex;align-items:center;gap:14px;padding:16px 22px;background:var(--ink);border-bottom:1.5px solid var(--ink);}
+.nfc-icon{font-size:1.6rem;line-height:1;flex-shrink:0;}
+.nfc-title{font-family:'Instrument Serif',serif;font-size:1.15rem;color:var(--cream);margin-bottom:2px;}
+.nfc-sub{font-size:.68rem;color:#a39e92;letter-spacing:.04em;text-transform:uppercase;}
+.nfc-body{padding:20px 22px;}
+.nfc-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.nfc-card{background:var(--paper);border:1px solid var(--rule);padding:16px 14px;}
+.nfc-card-icon{font-size:1.4rem;margin-bottom:8px;line-height:1;}
+.nfc-card-title{font-size:.82rem;font-weight:700;margin-bottom:5px;color:var(--ink);}
+.nfc-card-desc{font-size:.78rem;color:var(--mid);line-height:1.6;}
+.nfc-tip{display:flex;gap:10px;align-items:flex-start;background:#f7f4ee;border-left:3px solid var(--accent);padding:12px 14px;font-size:.78rem;color:var(--mid);line-height:1.6;}
+.nfc-tip-icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+@media(max-width:520px){
+  .nfc-cards{grid-template-columns:1fr;}
+  .nfc-box-head,.nfc-body{padding-left:14px;padding-right:14px;}
+}
+
+/* ── YOUTUBE WIDGET ── */
+.yt-box{border:1.5px solid var(--ink);margin:0 0 32px;overflow:hidden;width:100%;box-sizing:border-box;}
+.yt-box-head{display:flex;align-items:center;gap:10px;padding:12px 22px;background:var(--ink);border-bottom:1.5px solid #222;}
+.yt-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:18px;background:#ff0000;color:#fff;font-size:.65rem;font-weight:900;flex-shrink:0;border-radius:3px;}
+.yt-box-title{font-size:.85rem;font-weight:700;color:var(--cream);letter-spacing:.03em;}
+.yt-box-body{padding:18px 22px;}
+.yt-input-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.yt-input{flex:1;min-width:0;padding:10px 12px;background:var(--cream);border:1.5px solid var(--rule);font-family:'Inter',sans-serif;font-size:.83rem;color:var(--ink);outline:none;transition:border-color .15s;}
+.yt-input:focus{border-color:var(--ink);}
+.yt-frame-wrap{border:1.5px solid var(--ink);margin-bottom:12px;overflow:hidden;}
+.yt-frame-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--paper);border-bottom:1px solid var(--rule);font-size:.68rem;color:var(--mid);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.yt-frame-bar .preview-dots{display:flex;gap:4px;}
+.yt-frame-bar .preview-dots span{width:7px;height:7px;border-radius:50%;}
+.yt-frame-bar .preview-dots span:nth-child(1){background:#e0605a;}
+.yt-frame-bar .preview-dots span:nth-child(2){background:#e0b85a;}
+.yt-frame-bar .preview-dots span:nth-child(3){background:#5ab06a;}
+.yt-frame-bar #ytFrameTitle{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.yt-ratio{position:relative;width:100%;padding-bottom:56.25%;background:#000;}
+.yt-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.yt-hint{font-size:.75rem;color:var(--mid);line-height:1.55;}
+@media(max-width:520px){
+  .yt-box-head,.yt-box-body{padding-left:14px;padding-right:14px;}
+  .yt-input-row{flex-direction:column;}
+  .yt-input-row .btn{width:100%;justify-content:center;}
+}
+
+/* ── PRIVACY MODAL ── */
+.privacy-bg{position:fixed;inset:0;background:rgba(20,18,14,.75);z-index:500;display:none;place-items:center;padding:16px;backdrop-filter:blur(3px);}
+.privacy-bg.open{display:grid;}
+.privacy-modal{background:var(--cream);border:1.5px solid var(--ink);width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;animation:card-pop .25s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+.privacy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1.5px solid var(--ink);background:var(--ink);flex-shrink:0;}
+.privacy-title{font-family:'Instrument Serif',serif;font-size:1.35rem;color:var(--cream);margin-bottom:3px;}
+.privacy-sub{font-size:.7rem;color:#a39e92;letter-spacing:.04em;}
+.privacy-close{background:none;border:1px solid rgba(255,255,255,.2);color:#a39e92;font-size:.9rem;cursor:pointer;padding:5px 11px;transition:all .15s;flex-shrink:0;font-family:'Inter',sans-serif;}
+.privacy-close:hover{border-color:rgba(255,255,255,.5);color:var(--cream);}
+.privacy-body{overflow-y:auto;padding:24px;flex:1;-webkit-overflow-scrolling:touch;}
+.priv-section{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--rule);}
+.priv-section-last{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.priv-sec-title{font-family:'Instrument Serif',serif;font-size:1.05rem;margin-bottom:8px;letter-spacing:-.01em;}
+.priv-section p{font-size:.84rem;color:var(--ink);line-height:1.7;}
+.priv-section code{font-size:.78rem;background:var(--paper);border:1px solid var(--rule);padding:1px 5px;font-family:monospace;}
+.priv-list{list-style:none;margin:10px 0 0;display:flex;flex-direction:column;gap:6px;}
+.priv-list li{font-size:.84rem;color:var(--mid);padding-left:16px;position:relative;line-height:1.55;}
+.priv-list li::before{content:'·';position:absolute;left:4px;color:var(--accent);font-weight:700;}
+.priv-list-check li::before{content:'✓';color:var(--green);}
+.priv-link{color:var(--accent);text-decoration:none;font-weight:600;}
+.priv-link:hover{text-decoration:underline;}
+.privacy-foot{border-top:1.5px solid var(--ink);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--paper);flex-shrink:0;font-size:.76rem;color:var(--mid);flex-wrap:wrap;}
+@media(max-width:600px){
+  .privacy-modal{max-height:96vh;}
+  .privacy-head{padding:16px;}
+  .privacy-body{padding:16px;}
+  .privacy-foot{padding:12px 16px;font-size:.7rem;}
+}
+
+/* ══════════════════════════════
+   RESPONSIVE — FULL SYSTEM
+   Desktop ≥1024 · Tablet 768-1023 · Mobile ≤767
+══════════════════════════════ */
+
+/* ── TABLET (768px – 1023px) ── */
+@media(max-width:1023px){
+  /* Nav */
+  nav{padding:0 16px;}
+  .nav-links a{padding:14px 10px;font-size:.68rem;}
+  .nav-logo{padding:13px 16px 13px 0;}
+
+  /* Hero */
+  .hero{padding:0 16px;}
+  .hero-left{padding:40px 28px 40px 0;}
+  h1{font-size:clamp(2rem,4vw,3rem);}
+
+  /* Hero stats — 2×2 grid */
+  .hero-right{padding:28px 20px;}
+  .stat-n{font-size:2rem;}
+
+  /* Steps — 3 columns still but tighter */
+  .steps{gap:0;}
+  .step{padding:22px 16px;}
+
+  /* Gallery grid */
+  .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+
+  /* Detail */
+  .detail-wrap{padding:32px 20px 70px;}
+
+  /* Admin */
+  .admin-layout{grid-template-columns:1fr;}
+  .admin-sidebar{display:none;}
+  .admin-content{padding:24px 20px 90px;}
+  .admin-bottom-nav{display:block;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .stat-box:nth-child(2){border-right:none;}
+  .stat-box:nth-child(3){border-top:1px solid var(--rule);}
+
+  /* Customize fields */
+  .cf-grid{grid-template-columns:1fr 1fr;}
+}
+
+/* ── MOBILE (≤767px) ── */
+@media(max-width:767px){
+  /* Body base */
+  body{font-size:14px;}
+
+  /* Topbar */
+  .topbar{font-size:.7rem;padding:6px 12px;}
+
+  /* Nav */
+  nav{padding:0 12px;gap:0;}
+  .nav-logo{font-size:1rem;padding:12px 12px 12px 0;border-right:none;margin-right:0;}
+  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .nav-links a{padding:13px 10px;font-size:.65rem;white-space:nowrap;}
+  .nav-right{padding-left:10px;gap:6px;}
+  .btn-admin-nav{font-size:.65rem;padding:4px 9px;}
+
+  /* Hero — single column */
+  .hero{grid-template-columns:1fr;padding:0 14px;}
+  .hero-left{border-right:none;border-bottom:1.5px solid var(--ink);padding:32px 0 28px;}
+  h1{font-size:clamp(1.9rem,8vw,2.6rem);}
+  .hero-desc{font-size:.88rem;max-width:100%;}
+  .hero-ctas{gap:8px;}
+  .hero-ctas .btn{width:100%;justify-content:center;}
+
+  /* Hero stats — 2×2 */
+  .hero-right{grid-template-columns:1fr 1fr;padding:20px 0;}
+  .stat-cell{padding:16px 10px;}
+  .stat-n{font-size:2rem;}
+  .stat-label{font-size:.65rem;}
+
+  /* Section */
+  .section{padding:32px 14px;}
+  .sec-title{font-size:1.5rem;}
+
+  /* Steps — single column */
+  .steps{grid-template-columns:1fr;}
+  .step{border-right:none;border-bottom:1px solid var(--rule);padding:20px 14px;}
+  .step:last-child{border-bottom:none;}
+  .step-n{font-size:2.4rem;}
+
+  /* Gallery */
+  .gallery-bar{flex-direction:column;align-items:stretch;}
+  .search-f{width:100%;}
+  .grid{grid-template-columns:1fr;}
+  .card-thumb{height:145px;}
+
+  /* Card actions */
+  .card-actions{gap:5px;}
+  .card-actions .btn{flex:1;justify-content:center;font-size:.72rem;}
+
+  /* Detail page */
+  .detail-wrap{padding:22px 14px 60px;}
+  .detail-title{font-size:1.75rem;}
+  .detail-desc{font-size:.88rem;}
+  .detail-meta-line{font-size:.68rem;gap:6px;}
+
+  /* Spec grid — 1 col on mobile */
+  .spec-grid{grid-template-columns:1fr;}
+  .spec-cell{border-right:none !important;}
+  .spec-cell:nth-last-child(-n+2){border-bottom:1px solid var(--rule);}
+  .spec-cell:last-child{border-bottom:none;}
+
+  /* Customize box */
+  .customize-box-head,.customize-box-body,.customize-box-footer{padding-left:14px;padding-right:14px;}
+  .cf-grid{grid-template-columns:1fr;}
+  .cf-row[style*="grid-column"]{grid-column:span 1 !important;}
+  .customize-preview-wrap iframe{height:260px;}
+  .customize-actions{gap:6px;}
+  .customize-actions .btn{flex:1;justify-content:center;}
+
+  /* Footer */
+  footer{flex-direction:column;align-items:flex-start;gap:6px;padding:20px 14px;}
+
+  /* Admin */
+  .admin-layout{grid-template-columns:1fr;}
+  .admin-sidebar{display:none;}
+  .admin-content{padding:18px 14px 90px;}
+  .admin-bottom-nav{display:block;}
+  .admin-page-head{flex-direction:column;align-items:flex-start;gap:10px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .stat-box:nth-child(2){border-right:none;}
+  .stat-box:nth-child(3){border-top:1px solid var(--rule);}
+  .stat-box{padding:14px 16px;}
+  .drop-area{padding:32px 16px;}
+  .staging-foot{flex-direction:column;align-items:stretch;}
+  .input-f{min-width:0;width:100%;}
+
+  /* Modals */
+  .modal-bg,.fm-modal-bg,.dl-modal-bg{padding:10px;}
+  .modal{max-height:96vh;}
+  .modal-body iframe{min-height:340px;}
+  .modal-foot{gap:6px;}
+  .modal-foot .btn{font-size:.72rem;padding:7px 10px;}
+
+  /* Proj table — hide some cols */
+  .proj-table th:nth-child(4),
+  .proj-table td:nth-child(4),
+  .proj-table th:nth-child(5),
+  .proj-table td:nth-child(5){display:none;}
+
+  /* Countdown */
+  .cd-grid{gap:6px;}
+  .cd-n{font-size:1.8rem;}
+  .cd-l{font-size:.6rem;}
+
+  /* Toast */
+  #toast{bottom:12px;right:12px;left:12px;max-width:none;}
+}
+
+/* ── SMALL MOBILE (≤400px) ── */
+@media(max-width:400px){
+  h1{font-size:1.75rem;}
+  .hero-right{grid-template-columns:1fr 1fr;}
+  .stat-n{font-size:1.75rem;}
+  .nav-links a{padding:12px 8px;font-size:.62rem;}
+  .btn{padding:9px 14px;font-size:.76rem;}
+  .detail-title{font-size:1.5rem;}
+  .cd-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ══════════════════════════════
+   TOP PROGRESS BAR
+══════════════════════════════ */
+#topBar{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--accent),#e87a4a);
+  z-index:9000;
+  transition:width .25s ease,opacity .3s ease;
+  opacity:0;
+  box-shadow:0 0 10px rgba(212,95,46,.6);
+}
+#topBar.running{opacity:1;}
+
+/* ══════════════════════════════
+   PAGE TRANSITION LOADER
+══════════════════════════════ */
+#pageLoader{
+  position:fixed;inset:0;z-index:8888;
+  background:rgba(26,24,20,.92);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease;
+}
+#pageLoader.active{
+  opacity:1;pointer-events:all;
+}
+/* corner brackets */
+#pageLoader::before,#pageLoader::after{
+  content:'';position:absolute;width:40px;height:40px;
+  border-color:rgba(255,255,255,.15);border-style:solid;
+}
+#pageLoader::before{top:24px;left:24px;border-width:1.5px 0 0 1.5px;}
+#pageLoader::after{bottom:24px;right:24px;border-width:0 1.5px 1.5px 0;}
+
+.pl-inner{
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+  padding:0 32px;
+}
+.pl-logo{
+  font-family:'Inter',sans-serif;
+  font-size:1.5rem;font-weight:800;
+  color:var(--cream);letter-spacing:-.02em;
+  opacity:0;transform:translateY(6px);
+  animation:pl-appear .3s ease .05s forwards;
+}
+.pl-logo em{font-style:normal;background:#c5f04a;color:var(--ink);padding:0 5px;}
+@keyframes pl-appear{to{opacity:1;transform:translateY(0);}}
+
+/* thin progress track */
+.pl-track{
+  width:180px;height:2px;
+  background:rgba(255,255,255,.1);
+  overflow:hidden;position:relative;
+}
+.pl-track-fill{
+  position:absolute;left:0;top:0;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent),#e87a4a);
+  box-shadow:0 0 8px rgba(212,95,46,.8);
+  transition:width .25s ease;
+}
+/* shimmer on the track */
+.pl-track::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  animation:pl-shimmer 1.4s linear infinite;
+}
+@keyframes pl-shimmer{from{transform:translateX(-100%);}to{transform:translateX(200%);}}
+
+.pl-label{
+  font-size:.62rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.35);
+  opacity:0;
+}
+#pageLoader.active .pl-label{
+  animation:pl-appear .25s ease .1s forwards;
+}
+
+/* ══════════════════════════════
+   INTRO SCREEN
+══════════════════════════════ */
+#introScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+/* grid overlay */
+#introScreen::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  opacity:0;
+  animation:intro-fade-in .8s ease .3s forwards;
+}
+
+#introScreen.hiding{
+  animation:intro-exit .55s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes intro-exit{
+  0%{opacity:1;transform:scale(1);}
+  100%{opacity:0;transform:scale(1.04);}
+}
+
+/* logo block */
+.intro-brand{
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  position:relative;z-index:1;
+}
+
+/* big wordmark */
+.intro-logo{
+  font-family:'Inter',sans-serif;
+  font-size:clamp(3.5rem,12vw,6rem);
+  font-weight:900;
+  color:var(--cream);
+  letter-spacing:-.04em;
+  line-height:1;
+  opacity:0;
+  clip-path:inset(0 100% 0 0);
+  animation:intro-reveal .7s cubic-bezier(.22,1,.36,1) .2s forwards;
+}
+.intro-logo mark{
+  background:#c5f04a;color:var(--ink);
+  padding:0 6px;
+}
+@keyframes intro-reveal{
+  0%{opacity:1;clip-path:inset(0 100% 0 0);}
+  100%{opacity:1;clip-path:inset(0 0% 0 0);}
+}
+
+/* tagline */
+.intro-tagline{
+  font-size:.7rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.35);
+  margin-top:16px;
+  opacity:0;
+  animation:intro-fade-in .5s ease .8s forwards;
+}
+@keyframes intro-fade-in{to{opacity:1;}}
+
+/* progress bar */
+.intro-bar-wrap{
+  margin-top:40px;
+  width:clamp(140px,30vw,220px);
+  height:2px;
+  background:rgba(255,255,255,.08);
+  overflow:hidden;position:relative;
+  opacity:0;
+  animation:intro-fade-in .4s ease .9s forwards;
+}
+.intro-bar-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent),#e87a4a);
+  box-shadow:0 0 8px rgba(212,95,46,.7);
+  animation:intro-bar-grow var(--intro-duration,3s) cubic-bezier(.4,0,.2,1) 1s forwards;
+}
+@keyframes intro-bar-grow{
+  0%{width:0%;}55%{width:65%;}85%{width:90%;}100%{width:100%;}
+}
+
+/* status line */
+.intro-status{
+  margin-top:18px;
+  display:flex;align-items:center;gap:7px;
+  opacity:0;
+  animation:intro-fade-in .4s ease 1.05s forwards;
+}
+.intro-status-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--green);
+  animation:pulse 2s 1.1s infinite;
+}
+.intro-status-text{
+  font-size:.62rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ INTRO SCREEN ═══════════════ -->
+<div id="introScreen">
+  <div class="intro-brand">
+    <div class="intro-logo">Mi<mark>chi</mark></div>
+    <div class="intro-tagline">Mini-webs · WhatsApp · Gratis</div>
+    <div class="intro-bar-wrap">
+      <div class="intro-bar-fill"></div>
+    </div>
+    <div class="intro-status">
+      <div class="intro-status-dot"></div>
+      <span class="intro-status-text">Cargando catálogo…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE LOADER ═══════════════ -->
+<div id="pageLoader">
+  <div class="pl-inner">
+    <div class="pl-logo">Mi<em>chi</em></div>
+    <div class="pl-track"><div class="pl-track-fill" id="plTrackFill"></div></div>
+    <div class="pl-label" id="plLabel">Cargando…</div>
+  </div>
+</div>
+<div id="topBar"></div>
+
+<!-- ═══════════════ PUBLIC SITE ═══════════════ -->
+<div id="publicSite">
+  <div class="topbar">
+    <span class="dot-live"></span>
+    Catálogo en vivo · Todo en local · <span>100% gratis · Sin registros</span>
+  </div>
+
+  <div class="news-ticker">
+    <div class="ticker-label"><span class="dot-live"></span>En vivo</div>
+    <div class="ticker-track-wrap">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+  </div>
+
+  <nav>
+    <a class="nav-logo" href="#">Michi</a>
+    <div class="nav-links">
+      <a class="active" data-sec="home" onclick="showSection('home',this)">Inicio</a>
+      <a data-sec="cat" onclick="showSection('cat',this)">Catálogo</a>
+    </div>
+    <div class="nav-right">
+      <span><span class="dot-live"></span><span id="navCount">0 proyectos</span></span>
+      <button class="btn-admin-nav" onclick="goAdmin()">⚙ Admin</button>
+    </div>
+  </nav>
+
+  <!-- ═══════ PÁGINA: INICIO ═══════ -->
+  <div class="page-view active" id="page-home">
+
+  <!-- HERO -->
+  <div class="hero" id="sec-home">
+
+    <!-- Badge -->
+    <div class="hero-badge">
+      <span class="dot-live"></span>
+      <span id="heroBadgeCount">0 mini-webs listas para regalar</span>
+    </div>
+
+    <!-- Big headline -->
+    <h1>Sorprende a quien quieras por <em>WhatsApp.</em></h1>
+
+    <!-- How it works box -->
+    <div class="how-box">
+      <div class="how-box-head">
+        <span class="how-box-head-label"><span class="dot-live"></span>Cómo funciona</span>
+        <span class="how-box-head-tag" id="howBoxTag">3 pasos</span>
+      </div>
+      <ul class="how-steps">
+        <li class="how-step"><span class="how-step-n">01</span><span class="how-step-text">Eliges una mini-web del catálogo.</span></li>
+        <li class="how-step"><span class="how-step-n">02</span><span class="how-step-text">Cambias los textos (nombre, dedicatoria, mensaje).</span></li>
+        <li class="how-step"><span class="how-step-n">03</span><span class="how-step-text">Se descarga al instante y la envías por WhatsApp.</span></li>
+      </ul>
+      <div class="how-box-footer">Gratis · Sin registros · Sin apps</div>
+    </div>
+
+    <!-- CTAs -->
+    <div class="hero-ctas">
+      <a class="btn btn-hero-primary" onclick="showSection('cat',null)">Ver los <span id="heroCtaCount">0</span> códigos →</a>
+      <a class="btn btn-hero-ghost" onclick="showSection('cat',null)">Lo más reciente</a>
+    </div>
+
+  </div><!-- /hero -->
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <div class="stat-label-top">Total mini-webs</div>
+      <div class="stat-n" id="statTotal">0</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label-top">Formato</div>
+      <div class="stat-n" style="font-size:.82rem;font-weight:700;">1 archivo</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label-top">Precio</div>
+      <div class="stat-n" style="font-size:.82rem;font-weight:700;">Gratis</div>
+    </div>
+  </div>
+
+  <!-- CATEGORY STATS -->
+  <div id="catStatsBlock" style="border-bottom:1.5px solid var(--ink);">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- CATALOG PREVIEW STRIP -->
+  <div class="cat-strip" id="homePreviewStrip">
+    <div class="cat-strip-scroll" id="homeStripScroll">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS BOTTOM 3-col -->
+  <div class="how3">
+    <div class="how3-item">
+      <div class="how3-step">Paso · 01</div>
+      <div class="how3-title">Eliges</div>
+      <div class="how3-desc">Buscas en el catálogo el que encaje con la persona y la ocasión.</div>
+    </div>
+    <div class="how3-item">
+      <div class="how3-step">Paso · 02</div>
+      <div class="how3-title">Personalizas</div>
+      <div class="how3-desc">Cambias los textos: nombre, dedicatoria, mensaje secreto.</div>
+    </div>
+    <div class="how3-item">
+      <div class="how3-step">Paso · 03</div>
+      <div class="how3-title">Envías</div>
+      <div class="how3-desc">Se descarga al instante en tu móvil y lo mandas por WhatsApp.</div>
+    </div>
+  </div>
+
+  </div><!-- /page-home -->
+
+  <!-- ═══════ PÁGINA: CATÁLOGO ═══════ -->
+  <div class="page-view" id="page-cat">
+
+    <!-- Header -->
+    <div class="cat-page-header">
+      <div class="cat-page-badge"><span class="dot-live"></span>Full catalog</div>
+      <div class="cat-page-title">Find your perfect <em>mini-site.</em></div>
+      <div class="cat-page-desc">
+        <span id="catPageDesc">Mini-webs HTML para WhatsApp. Busca por nombre, filtra por categoría y descárgala gratis.</span>
+        <span class="ctag-blue" id="catPageTag">📱 WhatsApp</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="cat-filters">
+      <div class="cat-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="cat-search-f" type="text" id="pubSearch" placeholder="Search: birthday, i love you, prank…" oninput="renderPublic()">
+      </div>
+      <div class="cat-selects">
+        <select class="cat-sel" id="catFilter" onchange="renderPublic()">
+          <option value="">All categories</option>
+          <option value="PAREJA">Pareja</option>
+          <option value="HUMOR">Humor</option>
+          <option value="AMIGOS">Amigos</option>
+          <option value="FAMILIA">Familia</option>
+          <option value="JUEGO">Juego</option>
+          <option value="OTRO">Otro</option>
+        </select>
+        <select class="cat-sel" id="sortFilter" onchange="renderPublic()">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results count -->
+    <div class="cat-results-bar"><span id="pubGalLabel">0 results</span></div>
+
+    <!-- Grid -->
+    <div class="grid" id="pubGrid"></div>
+    <div class="empty" id="pubEmpty">
+      <span class="empty-icon">🌐</span>
+      <h3>No results found</h3>
+      <p>Try a different search term or category.</p>
+    </div>
+
+  </div><!-- /page-cat -->
+
+  <footer>
+    <span class="foot-logo">Michi</span>
+    <span>Hecho para crear · Todo en local</span>
+    <span id="footYear"></span>
+    <button class="foot-privacy-btn" onclick="openPrivacy()">📄 Política de privacidad</button>
+  </footer>
+</div>
+
+<!-- ═══════════════ PRIVACY MODAL ═══════════════ -->
+<div class="privacy-bg" id="privacyBg" onclick="if(event.target===this)closePrivacy()">
+  <div class="privacy-modal">
+    <div class="privacy-head">
+      <div>
+        <div class="privacy-title">Política de Privacidad</div>
+        <div class="privacy-sub">Última actualización: <span id="privacyDate"></span></div>
+      </div>
+      <button class="privacy-close" onclick="closePrivacy()">✕</button>
+    </div>
+    <div class="privacy-body">
+
+      <div class="priv-section">
+        <div class="priv-sec-title">1. Quiénes somos</div>
+        <p>Michi es una plataforma local de mini-webs HTML diseñada para crear, personalizar y compartir páginas web de forma sencilla. No operamos servidores externos ni recopilamos datos de ningún tipo fuera de tu propio dispositivo.</p>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">2. Datos que almacenamos</div>
+        <p>Toda la información que introduces en Michi (proyectos, archivos, configuración) se guarda <strong>únicamente en el almacenamiento local de tu navegador</strong> (<code>localStorage</code>). Estos datos nunca salen de tu dispositivo ni se envían a ningún servidor.</p>
+        <ul class="priv-list">
+          <li>Proyectos y archivos HTML/CSS/JS subidos</li>
+          <li>Nombre y categoría de cada proyecto</li>
+          <li>Contraseña del panel de administración (cifrada en tu navegador)</li>
+          <li>Correo de contacto opcional</li>
+          <li>Fecha de cuenta atrás si la configuras</li>
+        </ul>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">3. Datos que NO recopilamos</div>
+        <ul class="priv-list priv-list-check">
+          <li>No recogemos nombres, emails ni información personal de los visitantes</li>
+          <li>No usamos cookies de seguimiento</li>
+          <li>No enviamos datos a terceros</li>
+          <li>No usamos analytics ni publicidad</li>
+          <li>No tenemos acceso a los archivos que subes</li>
+        </ul>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">4. Descargas y archivos</div>
+        <p>Cuando descargas una mini-web personalizada, el archivo se genera <strong>completamente en tu navegador</strong>. Ningún dato se sube a ningún servidor durante este proceso. Tú eres el único responsable del contenido que compartes.</p>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">5. Fuentes externas</div>
+        <p>Esta aplicación carga fuentes tipográficas desde Google Fonts (<code>fonts.googleapis.com</code>). Google puede registrar esta solicitud según su propia política de privacidad. No tenemos control sobre ello.</p>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">6. Eliminación de datos</div>
+        <p>Puedes eliminar todos tus datos en cualquier momento desde el <strong>Panel Admin → Ajustes → Zona peligrosa</strong>, o limpiando el almacenamiento local de tu navegador manualmente.</p>
+      </div>
+
+      <div class="priv-section">
+        <div class="priv-sec-title">7. Menores de edad</div>
+        <p>Michi no está dirigido a menores de 13 años. Al usar esta aplicación confirmas que tienes al menos 13 años o cuentas con el consentimiento de un tutor legal.</p>
+      </div>
+
+      <div class="priv-section priv-section-last">
+        <div class="priv-sec-title">8. Contacto</div>
+        <p>Si tienes dudas sobre esta política puedes escribirnos a <a class="priv-link" id="privacyEmail" href="#">cruzangelsaid34@gmail.com</a>.</p>
+      </div>
+
+    </div>
+    <div class="privacy-foot">
+      <span>Al usar Michi aceptas esta política de privacidad.</span>
+      <button class="btn btn-fill btn-sm" onclick="closePrivacy()">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PÁGINA DE DETALLE ═══════════════ -->
+<div id="detailScreen">
+  <nav>
+    <a class="nav-logo" href="#" onclick="closeDetail();return false;">Michi</a>
+    <div class="nav-links">
+      <a onclick="closeDetail()">← Volver al catálogo</a>
+    </div>
+  </nav>
+  <div class="detail-wrap" id="detailBody"></div>
+</div>
+
+<!-- ═══════════════ ANIMACIÓN DE DESCARGA ═══════════════ -->
+<div class="dl-modal-bg" id="dlModalBg">
+  <div class="dl-modal" id="dlModal">
+    <div class="dl-accent-bar" id="dlAccentBar"></div>
+    <div class="dl-head">
+      <div class="dl-badge"><span class="dl-badge-dot"></span> Procesando descarga</div>
+      <div class="dl-title">Preparando tu archivo</div>
+      <div class="dl-sub">Todo ocurre en tu dispositivo · Nada se sube a ningún servidor</div>
+    </div>
+    <div class="dl-pct-wrap">
+      <div class="dl-pct" id="dlPct">0%</div>
+      <div class="dl-pct-label">completado</div>
+    </div>
+    <div class="dl-bar-outer"><div class="dl-bar-fill" id="dlBarFill"></div></div>
+    <ul class="dl-options" id="dlOptionsList">
+      <li class="dl-opt" id="dlStep1">
+        <span class="dl-opt-icon">1</span>
+        <span class="dl-opt-text">Empaquetando archivos HTML + CSS</span>
+        <span class="dl-opt-check">✓</span>
+      </li>
+      <li class="dl-opt" id="dlStep2">
+        <span class="dl-opt-icon">2</span>
+        <span class="dl-opt-text">Aplicando personalizaciones</span>
+        <span class="dl-opt-check">✓</span>
+      </li>
+      <li class="dl-opt" id="dlStep3">
+        <span class="dl-opt-icon">3</span>
+        <span class="dl-opt-text">Optimizando para WhatsApp</span>
+        <span class="dl-opt-check">✓</span>
+      </li>
+      <li class="dl-opt" id="dlStep4">
+        <span class="dl-opt-icon">4</span>
+        <span class="dl-opt-text">Generando archivo final</span>
+        <span class="dl-opt-check">✓</span>
+      </li>
+    </ul>
+    <div class="dl-success-msg">
+      <span class="dl-success-icon">🎉</span>
+      <div class="dl-success-title">¡Archivo listo para enviar!</div>
+      <div class="dl-success-hint">Ábrelo en WhatsApp como documento · Se ve perfecto en iOS y Android</div>
+    </div>
+    <div class="dl-count" id="dlCount"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ CUENTA ATRÁS ═══════════════ -->
+<div id="countdownScreen">
+  <div class="cd-box">
+    <div class="cd-eyebrow">Esta página se revela en</div>
+    <div class="cd-grid">
+      <div class="cd-unit"><div class="cd-n" id="cdDays">00</div><div class="cd-l">Días</div></div>
+      <div class="cd-unit"><div class="cd-n" id="cdHours">00</div><div class="cd-l">Horas</div></div>
+      <div class="cd-unit"><div class="cd-n" id="cdMins">00</div><div class="cd-l">Min</div></div>
+      <div class="cd-unit"><div class="cd-n" id="cdSecs">00</div><div class="cd-l">Seg</div></div>
+    </div>
+    <div class="cd-sub">Vuelve más tarde o deja esta pestaña abierta — se actualizará sola.</div>
+    <button class="cd-admin-btn" onclick="goAdmin()">⚙ Panel de administración</button>
+  </div>
+</div>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-head">
+      <span class="login-head-title">Panel de administración</span>
+      <span class="login-badge">Privado</span>
+    </div>
+    <div class="login-body">
+      <div>
+        <div class="field-label">Contraseña</div>
+        <input class="field-input" type="password" id="pwInput" placeholder="Introduce la contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="loginErr">Contraseña incorrecta. Inténtalo de nuevo.</div>
+      <button class="btn btn-fill" style="width:100%;justify-content:center;" onclick="doLogin()">Entrar al panel →</button>
+      <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="cancelLogin()">← Volver al sitio</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN PANEL ═══════════════ -->
+<div id="adminPanel">
+  <div class="admin-topbar">
+    <span class="admin-topbar-title">Michi</span>
+    <span class="badge-admin">Panel Admin</span>
+    <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--cream);border-color:rgba(255,255,255,.2);" onclick="exitAdmin()">← Salir del panel</button>
+  </div>
+
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <div class="admin-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Gestión</div>
+        <div class="sidebar-item active" onclick="adminNav('upload',this)"><span class="sidebar-icon">↑</span>Subir proyecto</div>
+        <div class="sidebar-item" onclick="adminNav('projects',this)"><span class="sidebar-icon">📁</span>Proyectos</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Sistema</div>
+        <div class="sidebar-item" onclick="adminNav('settings',this)"><span class="sidebar-icon">⚙</span>Ajustes</div>
+        <div class="sidebar-item" onclick="adminNav('settings',this);setTimeout(()=>{document.getElementById('aiApiKey').focus();document.getElementById('aiSettingsCard').scrollIntoView({behavior:'smooth'});},200)"><span class="sidebar-icon">🤖</span>IA · Generar web</div>
+        <div class="sidebar-item" onclick="adminNav('settings',this);setTimeout(()=>{document.getElementById('contactEmail').focus();},150)"><span class="sidebar-icon">📧</span>Mi correo</div>
+      </div>
+      <div class="sidebar-section" style="padding:14px 18px;">
+        <div style="font-size:.72rem;color:var(--mid);">Sesión activa</div>
+        <div style="font-size:.8rem;font-weight:600;margin-top:3px;">Administrador</div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="admin-content">
+
+      <!-- ── UPLOAD VIEW ── -->
+      <div class="admin-view active" id="view-upload">
+        <div class="admin-page-head">
+          <div>
+            <div class="admin-page-title">Subir proyecto</div>
+            <div class="admin-page-sub">Arrastra archivos o selecciónalos desde tu dispositivo</div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-box"><div class="n" id="aTotal">0</div><div class="l">Total proyectos</div></div>
+          <div class="stat-box"><div class="n" id="aPub">0</div><div class="l">Publicados</div></div>
+          <div class="stat-box"><div class="n" id="aFiles">0</div><div class="l">Archivos subidos</div></div>
+          <div class="stat-box"><div class="n" id="aSize">0 KB</div><div class="l">Almacenamiento</div></div>
+        </div>
+
+        <!-- Drop area -->
+        <div class="drop-area" id="adminDrop">
+          <span class="d-icon">📂</span>
+          <div class="d-title">Arrastra tus archivos aquí</div>
+          <div class="d-sub">o haz clic para seleccionar desde tu dispositivo</div>
+          <div class="chips">
+            <span class="chip chip-h">.html</span>
+            <span class="chip chip-c">.css</span>
+            <span class="chip chip-j">.js</span>
+            <span class="chip">.svg</span>
+            <span class="chip">.png / .jpg</span>
+          </div>
+          <button class="btn btn-fill" onclick="document.getElementById('adminFileInput').click();event.stopPropagation()">↑ Seleccionar archivos</button>
+          <input type="file" id="adminFileInput" multiple accept=".html,.htm,.css,.js,.json,.svg,.png,.jpg,.gif,.webp,.woff,.woff2">
+        </div>
+        <div class="prog-bar" id="adminProg"></div>
+
+        <!-- Staging -->
+        <div class="staging-box" id="adminStaging">
+          <div class="staging-box-head">
+            <span>Archivos listos — <span id="aCount">0</span></span>
+            <button class="btn btn-ghost btn-sm" onclick="clearAdmin()">Limpiar</button>
+          </div>
+          <ul class="s-list" id="aList"></ul>
+          <div class="staging-foot">
+            <input class="input-f" id="aName" type="text" placeholder="Nombre del proyecto (ej: Portfolio Animado)">
+            <select class="input-f" id="aCategory" style="max-width:160px;">
+              <option value="COUPLES">Couples</option>
+              <option value="FAMILY">Family</option>
+              <option value="HUMOR">Humor</option>
+              <option value="JUEGOS">Juegos</option>
+              <option value="OTRO">Otro</option>
+            </select>
+            <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;">
+              <input type="checkbox" id="aPublish" checked style="cursor:pointer;" onchange="if(this.checked){document.getElementById('aComingSoon').checked=false;document.getElementById('soonDateRow').style.display='none';}"> Publicar inmediatamente
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;" title="Aparece en el catálogo pero bloqueado">
+              <input type="checkbox" id="aComingSoon" style="cursor:pointer;" onchange="if(this.checked){document.getElementById('aPublish').checked=false;document.getElementById('soonDateRow').style.display='flex';}else{document.getElementById('soonDateRow').style.display='none';}"> 🔒 Coming Soon
+            </label>
+            <div class="soon-date-row" id="soonDateRow">
+              <label>📅 Publicar automáticamente el:</label>
+              <input class="input-f" type="datetime-local" id="aSoonDate" style="font-size:.8rem;">
+            </div>
+            <button class="btn btn-accent" onclick="adminPublish()">🚀 Publicar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROJECTS VIEW ── -->
+      <div class="admin-view" id="view-projects">
+        <div class="admin-page-head">
+          <div>
+            <div class="admin-page-title">Proyectos</div>
+            <div class="admin-page-sub">Gestiona todos los proyectos subidos</div>
+          </div>
+          <button class="btn btn-fill btn-sm" onclick="adminNav('upload',document.querySelector('.sidebar-item'))">↑ Subir nuevo</button>
+        </div>
+        <table class="proj-table" id="projTable">
+          <thead>
+            <tr>
+              <th style="width:70px">Vista prev.</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th>Archivos</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="projBody"></tbody>
+        </table>
+        <div class="empty" id="projEmpty" style="margin-top:1px;">
+          <span class="empty-icon">📁</span>
+          <h3>Sin proyectos aún</h3>
+          <p>Sube tu primer proyecto desde la pestaña "Subir".</p>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS VIEW ── -->
+      <div class="admin-view" id="view-settings">
+        <div class="admin-page-head">
+          <div>
+            <div class="admin-page-title">Ajustes</div>
+            <div class="admin-page-sub">Configuración del panel</div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="sc-head">🏷️ Identidad del sitio</div>
+          <div class="sc-body">
+            <div class="sc-note">Cambia el nombre que ven los visitantes en el logo, la pestaña del navegador y el pie de página.</div>
+            <div class="sc-row">
+              <div class="field-label">Nombre del sitio</div>
+              <input class="input-f field-input" type="text" id="siteNameInput" placeholder="Michi" maxlength="40">
+            </div>
+            <div class="sc-row">
+              <div class="field-label">Texto del pie de página</div>
+              <input class="input-f field-input" type="text" id="siteFootInput" placeholder="Hecho para crear · Todo en local" maxlength="80">
+            </div>
+            <button class="btn btn-fill" onclick="saveSiteIdentity()">Guardar identidad</button>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top:20px;">
+          <div class="sc-head">🔑 Cambiar contraseña</div>
+          <div class="sc-body">
+            <div class="sc-note">La contraseña se guarda en tu navegador (localStorage). Quien use este navegador podrá cambiarla.</div>
+            <div class="sc-row">
+              <div class="field-label">Contraseña actual</div>
+              <input class="input-f field-input" type="password" id="pwCurrent" placeholder="Contraseña actual">
+            </div>
+            <div class="sc-row">
+              <div class="field-label">Nueva contraseña</div>
+              <input class="input-f field-input" type="password" id="pwNew" placeholder="Nueva contraseña (mín. 4 caracteres)">
+            </div>
+            <div class="sc-row">
+              <div class="field-label">Confirmar nueva</div>
+              <input class="input-f field-input" type="password" id="pwConfirm" placeholder="Repite la nueva contraseña">
+            </div>
+            <button class="btn btn-fill" onclick="changePassword()">Guardar nueva contraseña</button>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top:20px;">
+          <div class="sc-head">⏳ Cuenta atrás de revelación</div>
+          <div class="sc-body">
+            <div class="sc-note">Mientras esté activa, los visitantes verán una pantalla de cuenta atrás en lugar del catálogo. Tú puedes seguir entrando al panel sin esperar.</div>
+            <div class="sc-row">
+              <div class="field-label">Fecha y hora de revelación</div>
+              <input class="input-f field-input" type="datetime-local" id="cdInput">
+            </div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;">
+              <button class="btn btn-fill" onclick="setCountdown(document.getElementById('cdInput').value)">Activar cuenta atrás</button>
+              <button class="btn btn-ghost" onclick="clearCountdownAdmin()">Desactivar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top:20px;">
+          <div class="sc-head">📧 Correo de contacto</div>
+          <div class="sc-body">
+            <div class="sc-note">Este correo aparece en las cards "Coming Soon" para que los visitantes puedan avisarte cuando quieran una mini-web. Ya guardamos el tuyo.</div>
+            <div class="sc-row">
+              <div class="field-label">Tu correo electrónico</div>
+              <input class="input-f field-input" type="email" id="contactEmail" placeholder="tu@correo.com">
+            </div>
+            <button class="btn btn-fill" onclick="saveContactEmail()">Guardar correo</button>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top:20px;">
+          <div class="sc-head">⬇ Descargas</div>
+          <div class="sc-body">
+            <div class="sc-note">Activa o desactiva la descarga de mini-webs para los visitantes. Si la desactivas, los botones de descarga se ocultan en el catálogo y en la página de detalle. Tú puedes seguir descargando desde el panel.</div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;">
+              <input type="checkbox" id="downloadsToggle" onchange="toggleDownloads(this.checked)" style="width:16px;height:16px;cursor:pointer;">
+              Permitir descargas a los visitantes
+            </label>
+          </div>
+        </div>
+
+        <!-- ── IA: GENERADOR DE MINI-WEBS ── -->
+        <div class="settings-card" style="margin-top:20px;" id="aiSettingsCard">
+          <div class="sc-head">🤖 Inteligencia Artificial · Generar mini-webs</div>
+          <div class="sc-body">
+            <div class="sc-note">Elige tu proveedor de IA, introduce tu clave y genera mini-webs HTML completas. Las claves se guardan solo en tu navegador.</div>
+
+            <!-- Selector de proveedor -->
+            <div class="sc-row">
+              <div class="field-label" style="font-weight:700;">Proveedor de IA</div>
+              <div style="display:flex;gap:0;border:1.5px solid var(--ink);overflow:hidden;width:fit-content;">
+                <button id="providerBtnClaude" onclick="setAiProvider('claude')"
+                  style="padding:8px 18px;font-size:.78rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;border-right:1px solid var(--ink);background:var(--ink);color:var(--cream);letter-spacing:.04em;transition:all .15s;">
+                  🟣 Claude
+                </button>
+                <button id="providerBtnGemini" onclick="setAiProvider('gemini')"
+                  style="padding:8px 18px;font-size:.78rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;background:transparent;color:var(--mid);letter-spacing:.04em;transition:all .15s;">
+                  🔵 Gemini
+                </button>
+              </div>
+              <div id="aiProviderHint" style="font-size:.72rem;margin-top:6px;color:var(--mid);">
+                Usando <strong>Claude</strong> (Anthropic) · <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);text-decoration:none;">Obtener clave →</a>
+              </div>
+            </div>
+
+            <!-- API Key Claude -->
+            <div class="sc-row" id="aiKeyRowClaude">
+              <div class="field-label">Clave de API — Claude (Anthropic)</div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input class="input-f field-input" type="password" id="aiApiKey" placeholder="sk-ant-api03-…" style="flex:1;min-width:200px;" oninput="aiKeyChanged('claude')">
+                <button class="btn btn-fill btn-sm" onclick="saveAiKey('claude')">Guardar</button>
+                <button class="btn btn-ghost btn-sm" id="aiKeyToggle" onclick="toggleAiKeyVisibility('aiApiKey','aiKeyToggle')">👁 Ver</button>
+              </div>
+              <div id="aiKeyStatusClaude" style="font-size:.72rem;margin-top:5px;color:var(--mid);"></div>
+            </div>
+
+            <!-- API Key Gemini -->
+            <div class="sc-row" id="aiKeyRowGemini" style="display:none;">
+              <div class="field-label">Clave de API — Gemini (Google AI Studio)</div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input class="input-f field-input" type="password" id="aiApiKeyGemini" placeholder="AIza…" style="flex:1;min-width:200px;" oninput="aiKeyChanged('gemini')">
+                <button class="btn btn-fill btn-sm" onclick="saveAiKey('gemini')">Guardar</button>
+                <button class="btn btn-ghost btn-sm" id="aiKeyToggleGemini" onclick="toggleAiKeyVisibility('aiApiKeyGemini','aiKeyToggleGemini')">👁 Ver</button>
+              </div>
+              <div id="aiKeyStatusGemini" style="font-size:.72rem;margin-top:5px;color:var(--mid);"></div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid var(--rule);margin:16px 0;">
+
+            <!-- Generator -->
+            <div class="sc-row">
+              <div class="field-label" style="font-weight:700;font-size:.82rem;">✨ Generar mini-web con IA</div>
+              <textarea id="aiPrompt" class="input-f" placeholder="Describe la mini-web que quieres crear… ej: 'Una página de felicitación de cumpleaños para mi amigo Carlos, con confeti animado, fondo oscuro y un mensaje especial'" style="width:100%;min-height:90px;padding:10px 12px;font-family:inherit;font-size:.84rem;resize:vertical;border:1.5px solid var(--rule);background:var(--cream);color:var(--ink);outline:none;transition:border-color .15s;" onfocus="this.style.borderColor='var(--ink)'" onblur="this.style.borderColor='var(--rule)'"></textarea>
+            </div>
+            <div class="sc-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div>
+                <div class="field-label">Categoría</div>
+                <select class="input-f" id="aiCategory" style="width:100%;padding:9px 12px;border:1.5px solid var(--ink);font-family:inherit;font-size:.8rem;background:var(--cream);color:var(--ink);outline:none;">
+                  <option value="COUPLES">Couples</option>
+                  <option value="FAMILY">Family</option>
+                  <option value="HUMOR">Humor</option>
+                  <option value="JUEGOS">Juegos</option>
+                  <option value="OTRO">Otro</option>
+                </select>
+              </div>
+              <div>
+                <div class="field-label">Nombre del proyecto</div>
+                <input class="input-f field-input" type="text" id="aiProjectName" placeholder="Ej: Cumple Carlos" style="width:100%;">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-accent" id="aiBtnGenerate" onclick="aiGenerateSite()" style="gap:8px;">
+                <span id="aiSpinner" style="display:none;">⏳</span>🚀 Generar con IA
+              </button>
+              <span id="aiGenStatus" style="font-size:.76rem;color:var(--mid);"></span>
+            </div>
+
+            <!-- Preview generated -->
+            <div id="aiPreviewWrap" style="display:none;margin-top:16px;border:1.5px solid var(--ink);overflow:hidden;">
+              <div style="background:var(--ink);color:var(--cream);padding:8px 14px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;">
+                <span>Vista previa generada</span>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-green btn-sm" onclick="aiPublishGenerated()">✅ Publicar</button>
+                  <button class="btn btn-ghost btn-sm" style="color:var(--cream);border-color:rgba(255,255,255,.3);" onclick="aiDiscardGenerated()">✕ Descartar</button>
+                </div>
+              </div>
+              <div style="position:relative;width:100%;height:360px;background:var(--paper);">
+                <iframe id="aiPreviewFrame" style="width:100%;height:100%;border:none;" sandbox="allow-scripts"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-top:20px;">
+          <div class="sc-head">🗑 Zona peligrosa</div>
+          <div class="sc-body">
+            <div class="sc-note">Eliminar todos los proyectos borrará permanentemente todos los datos guardados en este navegador.</div>
+            <button class="btn btn-danger" onclick="nukeAll()">Eliminar todos los proyectos</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-layout -->
+
+  <!-- ── MOBILE BOTTOM NAV ── -->
+  <div class="admin-bottom-nav" id="adminBottomNav">
+    <div class="admin-bottom-nav-inner">
+      <div class="abn-item active" id="abn-upload" onclick="adminNav('upload',document.querySelector('.sidebar-item'));abnActive('upload')">
+        <span class="abn-icon">↑</span>
+        <span>Subir</span>
+      </div>
+      <div class="abn-item" id="abn-projects" onclick="adminNav('projects',null);abnActive('projects')">
+        <span class="abn-icon">📁</span>
+        <span>Proyectos</span>
+      </div>
+      <div class="abn-item" id="abn-settings" onclick="adminNav('settings',null);abnActive('settings')">
+        <span class="abn-icon">⚙</span>
+        <span>Ajustes</span>
+      </div>
+      <div class="abn-item abn-exit" onclick="exitAdmin()">
+        <span class="abn-icon">←</span>
+        <span>Salir</span>
+      </div>
+    </div>
+  </div>
+</div><!-- /adminPanel -->
+
+<!-- MODAL VIEWER -->
+<div class="modal-bg" id="modalBg" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-name" id="mTitle">—</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-green btn-sm download-btn" onclick="downloadCurrent()">⬇ Descargar</button>
+        <button class="modal-close" onclick="closeModal()">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="mFrame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    </div>
+    <div class="modal-foot">
+      <div class="url-pill" id="mUrl" onclick="copyUrl()" title="Clic para copiar URL">—</div>
+      <button class="btn btn-ghost btn-sm" onclick="copyUrl()">📋 Copiar URL</button>
+      <button class="btn btn-fill btn-sm" onclick="newTab()">↗ Nueva pestaña</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ FILE MANAGER MODAL ═══════════════ -->
+<div class="fm-modal-bg" id="fmModalBg" onclick="if(event.target===this)closeFmModal()">
+  <div class="fm-modal">
+    <div class="fm-head">
+      <span class="fm-title">Archivos del proyecto</span>
+      <button class="fm-close" onclick="closeFmModal()">✕ Cerrar</button>
+    </div>
+    <div class="fm-body">
+      <div class="fm-proj-name" id="fmProjName"></div>
+      <ul class="fm-list" id="fmList"></ul>
+      <div class="fm-empty" id="fmEmpty" style="display:none;">Sin archivos en este proyecto.</div>
+    </div>
+    <div class="fm-foot">
+      <span id="fmCount"></span>
+      <span style="font-size:.7rem;opacity:.6;">Los cambios se guardan al instante</span>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><span id="tMsg"></span></div>
+
+<script>
+// ══════════════════════════════
+// STATE & PERSISTENCE
+// ══════════════════════════════
+const SKEY = 'mws_sites_v3';
+const PKEY = 'mws_pass_v1';
+const CKEY = 'mws_countdown_v1';
+const EKEY = 'mws_email_v1';
+const DEFAULT_PASS = 'veAzUVKmpvjn';
+const DEFAULT_EMAIL = 'cruzangelsaid34@gmail.com';
+
+let sites = [];
+let staged = [];
+let curUrl = null;
+let curSiteId = null;
+let adminLogged = false;
+let countdownTarget = null;
+let countdownTimer = null;
+let soonTimers = {}; // id → setInterval handle
+
+function loadData(){
+  try{ sites = JSON.parse(localStorage.getItem(SKEY)||'[]'); }catch(e){ sites=[]; }
+}
+function saveData(){
+  try{ localStorage.setItem(SKEY, JSON.stringify(sites.map(s=>({id:s.id,name:s.name,date:s.date,files:s.files,published:s.published,comingSoon:s.comingSoon||false,soonDate:s.soonDate||null,description:s.description,category:s.category,ref:s.ref})))); }catch(e){}
+}
+function getPass(){ return localStorage.getItem(PKEY)||DEFAULT_PASS; }
+function setPass(p){ localStorage.setItem(PKEY,p); }
+function loadCountdown(){ try{ const v=localStorage.getItem(CKEY); countdownTarget = v?parseInt(v,10):null; }catch(e){ countdownTarget=null; } }
+function saveCountdown(ts){ countdownTarget=ts; if(ts){ localStorage.setItem(CKEY,String(ts)); } else { localStorage.removeItem(CKEY); } }
+function getEmail(){ return localStorage.getItem(EKEY)||DEFAULT_EMAIL; }
+function saveContactEmail(){
+  const v=document.getElementById('contactEmail').value.trim();
+  if(!v||!v.includes('@')){ toast('Introduce un correo válido','err'); return; }
+  localStorage.setItem(EKEY,v);
+  toast('Correo guardado ✓','ok');
+  renderPublic();
+}
+
+// ══════════════════════════════
+// IDENTIDAD DEL SITIO
+// ══════════════════════════════
+const IKEY = 'mws_identity_v1';
+const DEFAULT_NAME = 'Michi';
+const DEFAULT_FOOT = 'Hecho para crear · Todo en local';
+
+function getSiteIdentity(){
+  try{ return JSON.parse(localStorage.getItem(IKEY)||'{}'); }catch(e){ return {}; }
+}
+function getSiteName(){ return getSiteIdentity().name || DEFAULT_NAME; }
+function getSiteFoot(){ return getSiteIdentity().foot || DEFAULT_FOOT; }
+function saveSiteIdentity(){
+  const nameInput=document.getElementById('siteNameInput');
+  const footInput=document.getElementById('siteFootInput');
+  const name=(nameInput?nameInput.value.trim():'')||DEFAULT_NAME;
+  const foot=(footInput?footInput.value.trim():'')||DEFAULT_FOOT;
+  localStorage.setItem(IKEY, JSON.stringify({name, foot}));
+  applySiteIdentity();
+  toast('Identidad del sitio actualizada ✓','ok');
+}
+function applySiteIdentity(){
+  const name=getSiteName();
+  const foot=getSiteFoot();
+  document.title=name;
+  document.querySelectorAll('.nav-logo').forEach(el=>el.textContent=name);
+  document.querySelectorAll('.foot-logo').forEach(el=>el.textContent=name);
+  const adminTitle=document.querySelector('.admin-topbar-title'); if(adminTitle) adminTitle.textContent=name;
+  document.querySelectorAll('footer span').forEach(el=>{
+    if(el.id!=='footYear' && !el.classList.contains('foot-logo') && !el.classList.contains('foot-privacy-btn')) el.textContent=foot;
+  });
+  const yearEl=document.getElementById('footYear');
+  if(yearEl) yearEl.textContent='© '+new Date().getFullYear()+' '+name;
+}
+
+// ══════════════════════════════
+// ACTIVAR/DESACTIVAR DESCARGAS
+// ══════════════════════════════
+const DKEY = 'mws_downloads_v1';
+function getDownloadsEnabled(){
+  const v=localStorage.getItem(DKEY);
+  return v===null ? true : v==='1';
+}
+function setDownloadsEnabled(v){ localStorage.setItem(DKEY, v?'1':'0'); }
+function toggleDownloads(checked){
+  setDownloadsEnabled(checked);
+  applyDownloadsVisibility();
+  toast(checked?'Descargas activadas para visitantes':'Descargas desactivadas para visitantes','ok');
+}
+function applyDownloadsVisibility(){
+  document.body.classList.toggle('downloads-off', !getDownloadsEnabled());
+}
+
+// ══════════════════════════════
+// SETTINGS FORM FILL
+// ══════════════════════════════
+function fillSettingsFields(){
+  const nameInput=document.getElementById('siteNameInput');
+  const footInput=document.getElementById('siteFootInput');
+  if(nameInput) nameInput.value=getSiteName();
+  if(footInput) footInput.value=getSiteFoot();
+  const downloadsToggle=document.getElementById('downloadsToggle');
+  if(downloadsToggle) downloadsToggle.checked=getDownloadsEnabled();
+}
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+loadData();
+loadCountdown();
+applySiteIdentity();
+applyDownloadsVisibility();
+
+// ── INTRO SCREEN ──
+(function(){
+  const INTRO_MS = 2800; // duración visible (2.8s) + 0.6s de salida ≈ 3.4s total
+  const intro = document.getElementById('introScreen');
+  // Aplica la duración CSS para la barra
+  intro.style.setProperty('--intro-duration', (INTRO_MS/1000)+'s');
+
+  function hideIntro(){
+    intro.classList.add('hiding');
+    setTimeout(()=>{ intro.style.display='none'; }, 620);
+  }
+
+  // Si las fuentes tardan, esperamos un mínimo antes de arrancar
+  const start = Date.now();
+  function go(){
+    const elapsed = Date.now() - start;
+    const wait = Math.max(0, INTRO_MS - elapsed);
+    setTimeout(hideIntro, wait);
+  }
+
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(go);
+  } else {
+    go();
+  }
+})();
+
+renderPublic();
+updateAdminStats();
+applyCountdownGate();
+scheduleSoonTimers();
+
+// ══════════════════════════════
+// CUENTA ATRÁS DE REVELACIÓN
+// ══════════════════════════════
+function applyCountdownGate(){
+  // Si el admin está dentro del panel o en login, la cuenta atrás no debe interferir
+  if(document.getElementById('adminPanel').style.display==='block') return;
+  if(document.getElementById('loginScreen').style.display==='flex') return;
+
+  if(countdownTarget && Date.now() < countdownTarget){
+    document.getElementById('publicSite').style.display='none';
+    document.getElementById('countdownScreen').style.display='flex';
+    startCountdownTick();
+  } else {
+    document.getElementById('countdownScreen').style.display='none';
+    document.getElementById('publicSite').style.display='block';
+    stopCountdownTick();
+  }
+}
+function startCountdownTick(){
+  stopCountdownTick();
+  tickCountdown();
+  countdownTimer=setInterval(tickCountdown,1000);
+}
+function stopCountdownTick(){ if(countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; } }
+function tickCountdown(){
+  const diff = countdownTarget - Date.now();
+  if(diff<=0){
+    stopCountdownTick();
+    document.getElementById('countdownScreen').style.display='none';
+    document.getElementById('publicSite').style.display='block';
+    renderPublic();
+    pushNews('La cuenta atrás terminó — el sitio ya está visible');
+    return;
+  }
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor(diff%86400000/3600000);
+  const m=Math.floor(diff%3600000/60000);
+  const s=Math.floor(diff%60000/1000);
+  document.getElementById('cdDays').textContent=String(d).padStart(2,'0');
+  document.getElementById('cdHours').textContent=String(h).padStart(2,'0');
+  document.getElementById('cdMins').textContent=String(m).padStart(2,'0');
+  document.getElementById('cdSecs').textContent=String(s).padStart(2,'0');
+}
+function setCountdown(dateTimeStr){
+  if(!dateTimeStr){ saveCountdown(null); applyCountdownGate(); return; }
+  const ts=new Date(dateTimeStr).getTime();
+  if(isNaN(ts)){ toast('Fecha no válida','err'); return; }
+  saveCountdown(ts);
+  applyCountdownGate();
+  toast('Cuenta atrás activada ✓','ok');
+}
+function clearCountdownAdmin(){
+  saveCountdown(null);
+  applyCountdownGate();
+  const inp=document.getElementById('cdInput'); if(inp) inp.value='';
+  toast('Cuenta atrás desactivada','ok');
+}
+
+// ══════════════════════════════
+// ACCESO OCULTO AL PANEL ADMIN
+// Entra escribiendo #admin al final de la URL,
+// o con el atajo de teclado Ctrl+Shift+A
+// ══════════════════════════════
+function checkHiddenAccess(){
+  if(window.location.hash.toLowerCase()==='#admin'){
+    history.replaceState(null,'',window.location.pathname+window.location.search);
+    goAdmin();
+  }
+}
+checkHiddenAccess();
+window.addEventListener('hashchange',checkHiddenAccess);
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&(e.key==='A'||e.key==='a')){ e.preventDefault(); goAdmin(); }
+});
+
+// ══════════════════════════════
+// NEWS TICKER (tiempo real)
+// ══════════════════════════════
+let tickerNews = [];
+const TICKER_MAX = 18;
+
+function tickerTimeNow(){
+  return new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+}
+function pushNews(text){
+  tickerNews.unshift(`${tickerTimeNow()} — ${text}`);
+  if(tickerNews.length>TICKER_MAX) tickerNews.pop();
+  renderTicker();
+}
+function renderTicker(){
+  const track=document.getElementById('tickerTrack');
+  if(!track) return;
+  let items = tickerNews.length ? tickerNews : ['Esperando actividad… sube o publica un proyecto para verlo aquí en vivo'];
+  // Duplicamos la lista para que el scroll sea continuo sin huecos
+  const html = items.map(t=>`<span class="ticker-item">${t}</span>`).join('');
+  track.innerHTML = html + html;
+}
+renderTicker();
+pushNews(`${sites.filter(s=>s.published).length} proyecto(s) publicados actualmente`);
+// Reloj vivo: añade un latido cada cierto tiempo si no hay actividad reciente
+setInterval(()=>{
+  if(!tickerNews.length) pushNews('Catálogo en espera de nuevas publicaciones');
+}, 45000);
+
+// ══════════════════════════════
+// NAV (PUBLIC)
+// ══════════════════════════════
+function showSection(sec, el){
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const targetLink = el || document.querySelector(`.nav-links a[data-sec="${sec}"]`);
+  if(targetLink) targetLink.classList.add('active');
+
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('page-'+sec);
+  if(page) page.classList.add('active');
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════
+// LOGIN
+// ══════════════════════════════
+function goAdmin(){
+  stopCountdownTick();
+  document.getElementById('countdownScreen').style.display='none';
+  if(adminLogged){ showAdmin(); return; }
+  document.getElementById('publicSite').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminPanel').style.display='none';
+  setTimeout(()=>document.getElementById('pwInput').focus(),100);
+}
+function doLogin(){
+  const v = document.getElementById('pwInput').value;
+  if(v === getPass()){
+    adminLogged = true;
+    document.getElementById('loginErr').style.display='none';
+    document.getElementById('pwInput').value='';
+    showAdmin();
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display='block';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+    // shake
+    const box = document.querySelector('.login-box');
+    box.style.transform='translateX(-8px)';
+    setTimeout(()=>{box.style.transition='transform .08s';box.style.transform='translateX(8px)';},80);
+    setTimeout(()=>{box.style.transform='translateX(0)';},160);
+    setTimeout(()=>{box.style.transition='';},240);
+  }
+}
+function cancelLogin(){
+  document.getElementById('loginScreen').style.display='none';
+  applyCountdownGate();
+}
+function showAdmin(){
+  document.getElementById('publicSite').style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('countdownScreen').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  const btn=document.querySelector('.btn-admin-nav'); if(btn) btn.classList.add('active-admin');
+  const cdInput=document.getElementById('cdInput');
+  if(cdInput) cdInput.value = countdownTarget ? toLocalInputValue(countdownTarget) : '';
+  const emailInput=document.getElementById('contactEmail');
+  if(emailInput) emailInput.value = getEmail();
+  fillSettingsFields();
+  updateAdminStats();
+  renderProjTable();
+}
+function exitAdmin(){
+  document.getElementById('adminPanel').style.display='none';
+  const btn=document.querySelector('.btn-admin-nav'); if(btn) btn.classList.remove('active-admin');
+  applyCountdownGate();
+}
+function toLocalInputValue(ts){
+  const d=new Date(ts);
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ══════════════════════════════
+// ADMIN NAV
+// ══════════════════════════════
+function adminNav(view, el){
+  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.admin-view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  abnActive(view);
+  if(view==='projects') renderProjTable();
+  if(view==='settings'){
+    const emailInput=document.getElementById('contactEmail');
+    if(emailInput) emailInput.value=getEmail();
+    fillSettingsFields();
+  }
+}
+
+function abnActive(view){
+  document.querySelectorAll('.abn-item').forEach(i=>i.classList.remove('active'));
+  const el=document.getElementById('abn-'+view);
+  if(el) el.classList.add('active');
+}
+
+// ══════════════════════════════
+// DRAG & DROP (ADMIN)
+// ══════════════════════════════
+const adz = document.getElementById('adminDrop');
+adz.addEventListener('click', ()=>document.getElementById('adminFileInput').click());
+adz.addEventListener('dragover', e=>{e.preventDefault();adz.classList.add('over');});
+adz.addEventListener('dragleave', ()=>adz.classList.remove('over'));
+adz.addEventListener('drop', e=>{e.preventDefault();adz.classList.remove('over');addAdminFiles(e.dataTransfer.files);});
+document.getElementById('adminFileInput').addEventListener('change', e=>addAdminFiles(e.target.files));
+
+function addAdminFiles(fl){ for(const f of fl) staged.push(f); renderAdminStaging(); }
+
+function renderAdminStaging(){
+  const n=staged.length;
+  document.getElementById('aCount').textContent=n;
+  document.getElementById('adminStaging').style.display=n?'block':'none';
+  const ul=document.getElementById('aList'); ul.innerHTML='';
+  staged.forEach((f,i)=>{
+    const ext=f.name.split('.').pop().toLowerCase();
+    const dc={html:'x-h',htm:'x-h',css:'x-c',js:'x-j'}[ext]||'x-o';
+    const li=document.createElement('li'); li.className='s-item';
+    li.innerHTML=`<span class="x-dot ${dc}"></span><span class="s-nm">${f.name}</span><span class="s-sz">${fmt(f.size)}</span><button class="s-rm" onclick="rmAdmin(${i})">✕</button>`;
+    ul.appendChild(li);
+  });
+}
+function rmAdmin(i){ staged.splice(i,1); renderAdminStaging(); }
+function clearAdmin(){
+  staged=[];
+  document.getElementById('aName').value='';
+  document.getElementById('adminFileInput').value='';
+  renderAdminStaging();
+}
+
+// ══════════════════════════════
+// PUBLISH
+// ══════════════════════════════
+async function adminPublish(){
+  if(!staged.length){ toast('Agrega al menos un archivo','err'); return; }
+  const name = document.getElementById('aName').value.trim() || guessName(staged);
+  const category = document.getElementById('aCategory').value;
+  const publish = document.getElementById('aPublish').checked;
+  const comingSoon = document.getElementById('aComingSoon').checked;
+  const soonDateVal = document.getElementById('aSoonDate').value;
+  const soonDate = (comingSoon && soonDateVal) ? new Date(soonDateVal).getTime() : null;
+  const bar = document.getElementById('adminProg');
+  bar.style.display='block'; bar.style.width='0%';
+  await wait(); bar.style.width='40%';
+  const files = await Promise.all(staged.map(readF));
+  bar.style.width='80%'; await wait(200);
+  const id='sw_'+Date.now();
+  const description = autoDescribe(files);
+  const ref = '#'+String(sites.length+1).padStart(3,'0');
+  sites.unshift({id,name,date:new Date().toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}),files,published:publish,comingSoon,soonDate,blobUrl:null,description,category,ref});
+  saveData();
+  bar.style.width='100%'; await wait(300);
+  bar.style.display='none'; bar.style.width='0%';
+  clearAdmin(); updateAdminStats(); renderPublic(); scheduleSoonTimers();
+  const stateLabel = comingSoon ? (soonDate?`Coming Soon · se publica el ${fmtDate(soonDate)}`:'Coming Soon') : (publish ? 'publicado' : 'guardado');
+  toast(`"${name}" ${stateLabel} ✓`,'ok');
+  pushNews(`Nuevo proyecto: "${name}"${comingSoon?' (Coming Soon)':publish?' (publicado)':''}`);
+}
+
+function readF(f){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>res({name:f.name,type:f.type||mime(f.name),content:e.target.result});
+    r.readAsDataURL(f);
+  });
+}
+
+// ══════════════════════════════
+// DESCRIPCIÓN AUTOMÁTICA
+// Analiza el HTML subido y genera una descripción
+// a partir de <title>, <meta description> o el primer texto visible.
+// ══════════════════════════════
+function autoDescribe(files){
+  const hf=files.find(f=>/\.html?$/i.test(f.name));
+  if(!hf) return 'Recursos del proyecto (sin archivo HTML principal).';
+  let html='';
+  try{ html=b64dec(hf.content); }catch(e){ return 'Mini-web subida por el administrador.'; }
+  if(!html) return 'Mini-web subida por el administrador.';
+
+  // 1) meta description
+  let m = html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']+)["']/i);
+  if(m && m[1].trim()) return cleanText(m[1]);
+
+  // 2) <title>
+  let title='';
+  m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+  if(m && m[1].trim()) title = cleanText(m[1]);
+
+  // 3) primer <h1>
+  let h1='';
+  m = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  if(m && m[1].trim()) h1 = cleanText(m[1].replace(/<[^>]+>/g,' '));
+
+  // 4) primer párrafo con texto real
+  let p='';
+  const pMatches = html.match(/<p[^>]*>([\s\S]*?)<\/p>/gi) || [];
+  for(const block of pMatches){
+    const txt = cleanText(block.replace(/<[^>]+>/g,' '));
+    if(txt.length>20){ p=txt; break; }
+  }
+
+  // Combina lo disponible en una descripción legible
+  let desc='';
+  if(title && h1 && title.toLowerCase()!==h1.toLowerCase()) desc = `${title} — ${h1}.`;
+  else if(title) desc = title+'.';
+  else if(h1) desc = h1+'.';
+  if(p) desc += (desc?' ':'') + p;
+
+  if(!desc) desc='Mini-web HTML subida por el administrador.';
+  if(desc.length>180) desc = desc.slice(0,177).trim()+'…';
+  return desc;
+}
+function cleanText(s){
+  return s.replace(/\s+/g,' ').trim();
+}
+
+// ══════════════════════════════
+// BLOB BUILD
+// ══════════════════════════════
+function buildUrl(site){
+  if(site.blobUrl) return site.blobUrl;
+  const hf=site.files.find(f=>/\.html?$/i.test(f.name))||site.files[0];
+  if(!hf) return null;
+  let html=b64dec(hf.content);
+  html=html.replace(/<link([^>]*)href="([^"]+)"([^>]*)>/gi,(m,a,href)=>{
+    const f=site.files.find(f=>f.name===href||f.name.endsWith('/'+href));
+    if(f&&/\.css$/i.test(href)) return `<style>${b64dec(f.content)}</style>`;
+    return m;
+  });
+  html=html.replace(/<script([^>]*)src="([^"]+)"([^>]*)><\/script>/gi,(m,a,src)=>{
+    const f=site.files.find(f=>f.name===src||f.name.endsWith('/'+src));
+    if(f&&/\.js$/i.test(src)) return `<script>${b64dec(f.content)}<\/script>`;
+    return m;
+  });
+  html=html.replace(/(<img[^>]+src=")([^"#?]+)(")/gi,(m,pre,src,post)=>{
+    const f=site.files.find(f=>f.name===src||f.name.endsWith('/'+src));
+    if(f) return pre+f.content+post;
+    return m;
+  });
+  const blob=new Blob([html],{type:'text/html'});
+  site.blobUrl=URL.createObjectURL(blob);
+  return site.blobUrl;
+}
+function b64dec(d){
+  if(!d) return '';
+  const p=d.split(',');
+  if(!p[1]) return d;
+  try{return atob(p[1]);}catch(e){return '';}
+}
+function buildHtmlString(site){
+  const hf=site.files.find(f=>/\.html?$/i.test(f.name))||site.files[0];
+  if(!hf) return null;
+  let html=b64dec(hf.content);
+  html=html.replace(/<link([^>]*)href="([^"]+)"([^>]*)>/gi,(m,a,href)=>{
+    const f=site.files.find(f=>f.name===href||f.name.endsWith('/'+href));
+    if(f&&/\.css$/i.test(href)) return `<style>${b64dec(f.content)}</style>`;
+    return m;
+  });
+  html=html.replace(/<script([^>]*)src="([^"]+)"([^>]*)><\/script>/gi,(m,a,src)=>{
+    const f=site.files.find(f=>f.name===src||f.name.endsWith('/'+src));
+    if(f&&/\.js$/i.test(src)) return `<script>${b64dec(f.content)}<\/script>`;
+    return m;
+  });
+  html=html.replace(/(<img[^>]+src=")([^"#?]+)(")/gi,(m,pre,src,post)=>{
+    const f=site.files.find(f=>f.name===src||f.name.endsWith('/'+src));
+    if(f) return pre+f.content+post;
+    return m;
+  });
+  return html;
+}
+
+// ══════════════════════════════
+// DOWNLOAD
+// ══════════════════════════════
+function downloadSite(id, e){
+  if(e) e.stopPropagation();
+  const site=sites.find(s=>s.id===id);
+  if(!site){ toast('Proyecto no encontrado','err'); return; }
+  const html=buildHtmlString(site);
+  if(!html){ toast('No se encontró archivo HTML','err'); return; }
+  triggerFileDownload(html, site.name);
+}
+function downloadCurrent(){
+  if(!getDownloadsEnabled()){ toast('Las descargas están desactivadas','err'); return; }
+  if(!curSiteId) return;
+  downloadSite(curSiteId);
+}
+function triggerFileDownload(html, name){
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(name.replace(/[^a-zA-Z0-9_\-]/g,'_')||'proyecto')+'.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);document.body.removeChild(a);},1000);
+}
+
+// ══════════════════════════════
+// DESCARGA PERSONALIZADA (página de detalle) + ANIMACIÓN
+// ══════════════════════════════
+function buildCustomizedHtml(){
+  const site=sites.find(s=>s.id===detailSiteId); if(!site) return null;
+  let html=buildHtmlString(site);
+  if(!html) return null;
+  detailFields.forEach((f,i)=>{
+    const input=document.getElementById('df_'+i);
+    if(!input) return;
+    const val=(input.value||input.textContent||'').trim();
+    if(!val || val===f.original) return;
+    html = html.split(f.original).join(val);
+  });
+  return html;
+}
+function downloadDetailCustom(){
+  if(!getDownloadsEnabled()){ toast('Las descargas están desactivadas','err'); return; }
+  const site=sites.find(s=>s.id===detailSiteId); if(!site) return;
+  const html=buildCustomizedHtml();
+  if(!html){ toast('No se encontró archivo HTML','err'); return; }
+  runDownloadAnimation(()=>{ triggerFileDownload(html, site.name); toast(`"${site.name}" descargado ✓`,'ok'); });
+}
+function detailLiveUpdate(){
+  // Mark changed fields
+  detailFields.forEach((f,i)=>{
+    const input=document.getElementById('df_'+i); if(!input) return;
+    const val=input.tagName==='TEXTAREA'?input.value:input.value;
+    if(val!==f.original) input.classList.add('changed'); else input.classList.remove('changed');
+  });
+  // Show changed dot + counter
+  const dot=document.getElementById('cfChangedDot');
+  const counter=document.getElementById('cfChangedCount');
+  const changedCount=detailFields.filter((f,i)=>{const inp=document.getElementById('df_'+i);return inp&&inp.value!==f.original;}).length;
+  if(dot) dot.classList.toggle('visible',changedCount>0);
+  if(counter) counter.textContent=changedCount>0?`${changedCount} campo${changedCount!==1?'s':''} modificado${changedCount!==1?'s':''}`:'Sin cambios';
+  // Update preview if visible
+  const pw=document.getElementById('customizePreviewWrap');
+  if(pw&&pw.style.display!=='none') detailUpdatePreviewFrame();
+}
+function detailUpdatePreviewFrame(){
+  const html=buildCustomizedHtml(); if(!html) return;
+  const frame=document.getElementById('customizePreviewFrame'); if(!frame) return;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  frame.src=url;
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+function toggleDetailPreview(){
+  const pw=document.getElementById('customizePreviewWrap'); if(!pw) return;
+  const isVisible=pw.style.display!=='none'&&pw.style.display!=='';
+  pw.style.display=isVisible?'none':'block';
+  if(!isVisible) detailUpdatePreviewFrame();
+}
+function resetDetailFields(){
+  detailFields.forEach((f,i)=>{
+    const input=document.getElementById('df_'+i); if(!input) return;
+    if(input.tagName==='TEXTAREA') input.value=f.original; else input.value=f.original;
+    input.classList.remove('changed');
+  });
+  const dot=document.getElementById('cfChangedDot'); if(dot) dot.classList.remove('visible');
+  const pw=document.getElementById('customizePreviewWrap');
+  if(pw&&pw.style.display!=='none') detailUpdatePreviewFrame();
+  toast('Campos restaurados','ok');
+}
+function copyDetailCode(){
+  const html=buildCustomizedHtml();
+  if(!html){ toast('No hay código disponible','err'); return; }
+  navigator.clipboard.writeText(html).then(()=>toast('Código copiado al portapapeles ✓','ok')).catch(()=>toast('No se pudo copiar','err'));
+}
+function runDownloadAnimation(onDone){
+  const bg=document.getElementById('dlModalBg');
+  const modal=document.getElementById('dlModal');
+  const fill=document.getElementById('dlBarFill');
+  const accentBar=document.getElementById('dlAccentBar');
+  const count=document.getElementById('dlCount');
+  const pctEl=document.getElementById('dlPct');
+  const steps=['dlStep1','dlStep2','dlStep3','dlStep4'];
+
+  // Reset
+  modal.classList.remove('success');
+  fill.style.transition='none'; fill.style.width='0%';
+  accentBar.style.transition='none'; accentBar.style.width='0%';
+  if(pctEl) pctEl.textContent='0%';
+  count.textContent='';
+  steps.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.classList.remove('done','active'); }
+  });
+  bg.classList.add('open');
+
+  // Activate first step immediately
+  const s0=document.getElementById(steps[0]); if(s0) s0.classList.add('active');
+
+  let pct=0;
+  const pctStep=setInterval(()=>{
+    pct=Math.min(97, pct + (pct<40?5: pct<75?3:1));
+    fill.style.transition='width .18s ease';
+    fill.style.width=pct+'%';
+    accentBar.style.transition='width .18s ease';
+    accentBar.style.width=pct+'%';
+    if(pctEl) pctEl.textContent=Math.round(pct)+'%';
+  },80);
+
+  // Step sequence: activate next while marking prev done
+  const stepDelay=[0, 650, 1300, 2000];
+  stepDelay.forEach((delay, idx)=>{
+    setTimeout(()=>{
+      // Mark previous done
+      if(idx>0){
+        const prev=document.getElementById(steps[idx-1]);
+        if(prev){ prev.classList.remove('active'); prev.classList.add('done'); }
+      }
+      // Activate current
+      const cur=document.getElementById(steps[idx]);
+      if(cur) cur.classList.add('active');
+    }, delay);
+  });
+
+  // Finish at 3s
+  setTimeout(()=>{
+    clearInterval(pctStep);
+    // Complete all steps
+    steps.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.classList.remove('active'); el.classList.add('done'); }
+    });
+    fill.style.transition='width .3s ease';
+    fill.style.width='100%';
+    accentBar.style.transition='width .3s ease';
+    accentBar.style.width='100%';
+    if(pctEl) pctEl.textContent='100%';
+
+    // Show success state
+    setTimeout(()=>{
+      modal.classList.add('success');
+      setTimeout(()=>{
+        bg.classList.remove('open');
+        modal.classList.remove('success');
+        onDone();
+      }, 1200);
+    }, 350);
+  }, 3000);
+}
+
+// ══════════════════════════════
+// PUBLIC GALLERY
+// ══════════════════════════════
+function renderPublic(){
+  const q=document.getElementById('pubSearch').value.toLowerCase();
+  const all=sites.filter(s=>s.published||s.comingSoon);
+  const pub=all.filter(s=>(s.name.toLowerCase().includes(q)));
+  const pubOnly=sites.filter(s=>s.published);
+
+  // Update new home stats
+  const total=pubOnly.length;
+  const el=id=>document.getElementById(id);
+  if(el('statTotal')) el('statTotal').textContent=total;
+  if(el('heroBadgeCount')) el('heroBadgeCount').textContent=total+' mini-web'+(total!==1?'s':'')+' lista'+(total!==1?'s':'')+' para regalar';
+  if(el('heroCtaCount')) el('heroCtaCount').textContent=total;
+  if(el('navCount')) el('navCount').textContent=total+' proyecto'+(total!==1?'s':'');
+  if(el('sStat')) el('sStat').textContent=total;
+
+  // Category stats block
+  const catBlock=el('catStatsBlock');
+  if(catBlock){
+    const cats=['PAREJA','HUMOR','AMIGOS','FAMILIA','JUEGO'];
+    const counts=Object.fromEntries(cats.map(c=>[c,pubOnly.filter(s=>(s.category||'').toUpperCase()===c).length]));
+    const lastSite=pubOnly.length?pubOnly[pubOnly.length-1]:null;
+    catBlock.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:.76rem;">
+      ${cats.map(c=>`<tr style="border-bottom:1px solid var(--rule);">
+        <td style="padding:9px 16px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;color:var(--mid);">${c}</td>
+        <td style="padding:9px 16px;text-align:right;font-weight:700;">${counts[c]}</td>
+      </tr>`).join('')}
+      <tr>
+        <td style="padding:9px 16px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;color:var(--mid);background:#f5fce8;">Última novedad</td>
+        <td style="padding:9px 16px;text-align:right;font-weight:700;background:#f5fce8;">${lastSite?lastSite.name:'—'}</td>
+      </tr>
+    </table>`;
+  }
+
+  // Home preview strip
+  const strip=el('homeStripScroll');
+  if(strip){
+    strip.innerHTML='';
+    if(pubOnly.length===0){
+      for(let i=0;i<4;i++){
+        const d=document.createElement('div');
+        d.className='cat-strip-card';
+        d.innerHTML=`<span class="cat-strip-card-empty">🌐</span>`;
+        strip.appendChild(d);
+      }
+    } else {
+      pubOnly.slice(0,8).forEach((site,i)=>{
+        const hasHtml=site.files.some(f=>/\.html?$/i.test(f.name));
+        const d=document.createElement('div');
+        d.className='cat-strip-card';
+        d.onclick=()=>openDetail(site.id);
+        d.style.cursor='pointer';
+        if(hasHtml){
+          setTimeout(()=>{
+            const url=buildUrl(site);
+            const iframe=document.createElement('iframe');
+            iframe.sandbox='allow-scripts';
+            iframe.src=url;
+            Object.assign(iframe.style,{width:'400%',height:'400%',transform:'scale(.25)',transformOrigin:'top left',border:'none',pointerEvents:'none',position:'absolute',top:'0',left:'0'});
+            d.innerHTML='';
+            d.appendChild(iframe);
+          },i*80+100);
+        } else {
+          d.innerHTML=`<span class="cat-strip-card-empty">${catIcon(site.category)}</span>`;
+        }
+        strip.appendChild(d);
+      });
+    }
+  }
+
+  // Catalog filters
+  const catSel=document.getElementById('catFilter');
+  const sortSel=document.getElementById('sortFilter');
+  const catVal=catSel?catSel.value:'';
+  const sortVal=sortSel?sortSel.value:'newest';
+
+  let filtered=pubOnly.filter(s=>{
+    const matchQ=!q||s.name.toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q);
+    const matchCat=!catVal||(s.category||'').toUpperCase()===catVal;
+    return matchQ&&matchCat;
+  });
+  // also include comingSoon in filtered if passes filter
+  const soonFiltered=sites.filter(s=>s.comingSoon).filter(s=>{
+    const matchQ=!q||s.name.toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q);
+    const matchCat=!catVal||(s.category||'').toUpperCase()===catVal;
+    return matchQ&&matchCat;
+  });
+  filtered=[...filtered,...soonFiltered];
+
+  if(sortVal==='oldest') filtered.sort((a,b)=>a.date.localeCompare(b.date));
+  else if(sortVal==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  // newest: default order (most recently added last → reverse)
+  else filtered.reverse();
+
+  if(el('pubGalLabel')) el('pubGalLabel').textContent=filtered.length+' RESULTS';
+  const grid=document.getElementById('pubGrid');
+  const empty=document.getElementById('pubEmpty');
+  const email=getEmail();
+  grid.innerHTML='';
+  if(!filtered.length){
+    empty.style.display='block';
+    empty.style.gridColumn='span 2';
+    return;
+  }
+  empty.style.display='none';
+  filtered.forEach((site,i)=>{
+    const hasHtml=site.files.some(f=>/\.html?$/i.test(f.name));
+    const cat=site.category||'OTRO';
+    const ref=site.ref||('#'+String(i+1).padStart(3,'0'));
+    const isSoon=!!site.comingSoon;
+    const dateLabel=(isSoon&&site.soonDate)?`📅 Disponible el ${fmtDate(site.soonDate)}`:null;
+    const card=document.createElement('div');
+    card.className='card'+(isSoon?' card-soon':'');
+    card.style.animationDelay=(i*.04)+'s';
+    if(!isSoon) card.onclick=()=>openDetail(site.id);
+    const totalBytes = site.files.reduce((a,f)=>a+(f.content?f.content.length*.75:0),0);
+    const techs=[...new Set(site.files.map(f=>f.name.split('.').pop().toLowerCase()))];
+    const techLabel = techs.map(t=>t.toUpperCase()).join('+') || 'HTML';
+    card.innerHTML=`
+      <div class="card-win-bar">
+        <div class="win-dots"><span></span><span></span><span></span></div>
+        <span class="card-ref">${ref}</span>
+      </div>
+      <div class="card-thumb" id="cthumb_${site.id}">
+        <span class="card-thumb-icon">${catIcon(cat)}</span>
+        <div class="card-cat-thumb"><span class="ctag">${cat}</span></div>
+        ${isSoon?`<div class="cs-overlay"><span class="cs-lock">🔒</span><span class="cs-badge">Próximamente</span>${dateLabel?`<span class="cs-date">${dateLabel}</span>`:''}</div>`:''}
+      </div>
+      <div class="card-detail">
+        <div class="card-eyebrow">${cat}</div>
+        <div class="card-meta-line">
+          <span>${site.date}</span><span>·</span><span>REF. ${ref.replace('#','')}</span><span>·</span>
+          ${!isSoon?`<span style="color:var(--green);font-weight:700;">READY TO SEND</span>`:`<span style="color:var(--accent);font-weight:700;">PRÓXIMAMENTE</span>`}
+        </div>
+        <div class="card-title-big">${site.name}</div>
+        ${site.description?`<div class="card-detail-desc">${site.description.length>80?site.description.slice(0,80)+'…':site.description}</div>`:''}
+        <div class="card-spec-grid">
+          <div class="card-spec-cell"><div class="card-spec-l">Format</div><div class="card-spec-v">.html</div></div>
+          <div class="card-spec-cell"><div class="card-spec-l">Size</div><div class="card-spec-v">${fmt(totalBytes)}</div></div>
+          <div class="card-spec-cell"><div class="card-spec-l">Tech</div><div class="card-spec-v">${techLabel}</div></div>
+          <div class="card-spec-cell"><div class="card-spec-l">Price</div><div class="card-spec-v accent">Free</div></div>
+        </div>
+        ${!isSoon?`<div class="card-steps-mini">
+          <div class="card-step-mini"><div class="card-step-n-mini">01</div><div class="card-step-body-mini"><h5>Personaliza</h5><p>Edita los textos a tu gusto</p></div></div>
+          <div class="card-step-mini"><div class="card-step-n-mini">02</div><div class="card-step-body-mini"><h5>Descarga</h5><p>Se genera en tu navegador</p></div></div>
+          <div class="card-step-mini"><div class="card-step-n-mini">03</div><div class="card-step-body-mini"><h5>Envía</h5><p>Por WhatsApp en un toque</p></div></div>
+        </div>
+        <div class="card-actions" style="padding:8px 0 10px;">
+          <button class="card-link" onclick="event.stopPropagation();openDetail('${site.id}')">View details</button>
+          ${hasHtml?`<button class="card-open-btn" onclick="event.stopPropagation();openDetail('${site.id}')">Open →</button>`:''}
+        </div>`:`<div style="font-size:.7rem;color:var(--mid);padding:8px 0 10px;">${dateLabel||'Disponible pronto'}</div>`}
+      </div>
+      ${isSoon&&email?`<div class="cs-notice">🔔 <a class="contact-link" href="mailto:${email}?subject=Avísame%20sobre%20${encodeURIComponent(site.name)}">Avísame por email</a></div>`:''}`;
+    grid.appendChild(card);
+    // inject live preview iframe
+    if(hasHtml&&!isSoon){
+      setTimeout(()=>{
+        const thumb=document.getElementById('cthumb_'+site.id);
+        if(!thumb) return;
+        const url=buildUrl(site);
+        const iframe=document.createElement('iframe');
+        iframe.sandbox='allow-scripts';
+        iframe.src=url;
+        Object.assign(iframe.style,{width:'300%',height:'300%',transform:'scale(.333)',transformOrigin:'top left',border:'none',pointerEvents:'none',position:'absolute',top:'0',left:'0'});
+        // keep category tag on top
+        const catThumb=thumb.querySelector('.card-cat-thumb');
+        thumb.innerHTML='';
+        thumb.appendChild(iframe);
+        if(catThumb) thumb.appendChild(catThumb);
+      },i*60+80);
+    }
+  });
+}
+function catIcon(cat){
+  return {COUPLES:'💌',FAMILY:'👪',HUMOR:'😄',JUEGOS:'🎮',OTRO:'🌐'}[cat]||'🌐';
+}
+
+// ══════════════════════════════
+// PÁGINA DE DETALLE
+// ══════════════════════════════
+let detailSiteId=null;
+let detailFields=[]; // [{label, original}]
+
+function openDetail(id){
+  const site=sites.find(s=>s.id===id); if(!site) return;
+  detailSiteId=id;
+  const hasHtml=site.files.some(f=>/\.html?$/i.test(f.name));
+  const cat=site.category||'OTRO';
+  const hf=site.files.find(f=>/\.html?$/i.test(f.name));
+  let html = hf?b64dec(hf.content):'';
+  let title='', h1='', h2s=[], ps=[], buttons=[];
+
+  let m=html.match(/<title[^>]*>([^<]*)<\/title>/i); if(m) title=cleanText(m[1]);
+  m=html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i); if(m) h1=cleanText(m[1].replace(/<[^>]+>/g,' '));
+  // h2 headings
+  const h2matches = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)];
+  h2matches.slice(0,2).forEach(mm=>{ const t=cleanText(mm[1].replace(/<[^>]+>/g,' ')); if(t&&t.length>2) h2s.push(t); });
+  // paragraphs
+  const pMatches2=[...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+  pMatches2.forEach(mm=>{ const t=cleanText(mm[1].replace(/<[^>]+>/g,' ')); if(t&&t.length>15&&t.length<200&&ps.length<3) ps.push(t); });
+  // button texts
+  const btnMatches=[...html.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/gi)];
+  btnMatches.forEach(mm=>{ const t=cleanText(mm[1].replace(/<[^>]+>/g,' ')); if(t&&t.length>1&&t.length<60&&buttons.length<2) buttons.push(t); });
+
+  detailFields=[];
+  if(title) detailFields.push({key:'title',label:'Título de la página',original:title,type:'text'});
+  if(h1&&h1.toLowerCase()!==title.toLowerCase()) detailFields.push({key:'h1',label:'Encabezado principal',original:h1,type:'text'});
+  h2s.forEach((t,i)=>detailFields.push({key:'h2_'+i,label:'Subtítulo '+(i+1),original:t,type:'text'}));
+  ps.forEach((t,i)=>detailFields.push({key:'p_'+i,label:'Párrafo '+(i+1),original:t,type:'textarea'}));
+  buttons.forEach((t,i)=>detailFields.push({key:'btn_'+i,label:'Botón '+(i+1),original:t,type:'text'}));
+
+  const totalBytes = site.files.reduce((a,f)=>a+(f.content?f.content.length*.75:0),0);
+  const techs=[...new Set(site.files.map(f=>f.name.split('.').pop().toLowerCase()))];
+  const techLabel = techs.map(t=>t.toUpperCase()).join(' + ') || 'HTML';
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-eyebrow">${cat}</div>
+    <div class="detail-meta-line"><span>${site.date}</span><span>·</span><span>REF. ${(site.ref||'').replace('#','')}</span><span>·</span><span>READY TO SEND</span></div>
+    <div class="detail-title">${site.name}</div>
+    <div class="detail-desc">${site.description||'Mini-web personalizable lista para enviar.'}</div>
+
+    <div class="spec-grid">
+      <div class="spec-cell"><div class="spec-l">Format</div><div class="spec-v">.html file</div></div>
+      <div class="spec-cell"><div class="spec-l">Size</div><div class="spec-v">${fmt(totalBytes)}</div></div>
+      <div class="spec-cell"><div class="spec-l">Technology</div><div class="spec-v">${techLabel}</div></div>
+      <div class="spec-cell"><div class="spec-l">Price</div><div class="spec-v accent">Free</div></div>
+      <div class="spec-cell"><div class="spec-l">Campos editables</div><div class="spec-v">${detailFields.length?detailFields.length+' campo'+(detailFields.length!==1?'s':''):'Sin campos'}</div></div>
+      <div class="spec-cell"><div class="spec-l">Compatible</div><div class="spec-v">iOS · Android</div></div>
+    </div>
+
+    <div class="detail-section-title">Send it in under 2 minutes</div>
+    <div class="detail-steps">
+      <div class="detail-step"><div class="detail-step-n">01</div><div class="detail-step-body"><h4>Personaliza los textos</h4><p>Edita los campos de abajo — la vista previa se actualiza en vivo.</p></div></div>
+      <div class="detail-step"><div class="detail-step-n">02</div><div class="detail-step-body"><h4>Descarga el archivo</h4><p>Se genera en tu navegador al instante. Nada se sube a ningún servidor.</p></div></div>
+      <div class="detail-step"><div class="detail-step-n">03</div><div class="detail-step-body"><h4>Envíalo por WhatsApp</h4><p>Adjúntalo como documento. Quien lo recibe lo abre con un toque.</p></div></div>
+    </div>
+
+    <div class="customize-box">
+      <!-- Header -->
+      <div class="customize-box-head">
+        <h3>✏️ Customize &amp; Download <span class="cf-changed-dot" id="cfChangedDot"></span></h3>
+        <p>${detailFields.length
+          ? `${detailFields.length} campo${detailFields.length!==1?'s':''} editable${detailFields.length!==1?'s':''} · la vista previa se actualiza al instante`
+          : 'Este proyecto no tiene campos detectados automáticamente — descárgalo tal cual.'}</p>
+      </div>
+
+      <!-- Body: fields -->
+      <div class="customize-box-body">
+
+        ${detailFields.length?`
+        <div class="cf-grid">
+          ${detailFields.map((f,i)=>`
+            <div class="cf-row" ${f.type==='textarea'?'style="grid-column:span 2"':''}>
+              <label>
+                ${f.label}
+                <span class="lbadge">${f.key.startsWith('p_')?'párrafo':f.key.startsWith('btn_')?'botón':f.key.startsWith('h2')?'subtítulo':'texto'}</span>
+              </label>
+              ${f.type==='textarea'
+                ? `<textarea id="df_${i}" rows="3" oninput="detailLiveUpdate()">${f.original.replace(/</g,'&lt;')}</textarea>`
+                : `<input type="text" id="df_${i}" value="${f.original.replace(/"/g,'&quot;')}" oninput="detailLiveUpdate()">`
+              }
+            </div>`).join('')}
+        </div>
+        <div class="cf-footer-row">
+          <span class="cf-counter" id="cfChangedCount"></span>
+          <button class="cf-reset" onclick="resetDetailFields()">↺ Restaurar originales</button>
+        </div>
+        <div class="cf-divider"></div>
+        `:''}
+
+        <!-- Preview -->
+        ${hasHtml?`
+        <div class="customize-preview-wrap" id="customizePreviewWrap">
+          <div class="customize-preview-bar">
+            <div class="preview-dots"><span></span><span></span><span></span></div>
+            <span>Vista previa en vivo</span>
+            <button class="cf-reset" style="visibility:hidden">✕</button>
+          </div>
+          <iframe id="customizePreviewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+        `:''}
+
+        <!-- Action buttons removed -->
+
+      </div><!-- /customize-box-body -->
+
+      <!-- Footer: download CTA -->
+      <div class="customize-box-footer">
+        <button class="btn detail-download-btn download-btn" onclick="downloadDetailCustom()">
+          ⬇ Descargar archivo personalizado
+        </button>
+      </div>
+    </div>
+    ${hasHtml?`<p style="text-align:center;margin-top:18px;"><a class="btn btn-ghost btn-sm" onclick="openModal('${site.id}',event)">↗ Abrir en pantalla completa</a></p>`:''}
+  `;
+
+  // Init live preview if has html — show automatically
+  if(hasHtml){
+    const pw=document.getElementById('customizePreviewWrap');
+    if(pw) pw.style.display='block';
+    detailUpdatePreviewFrame();
+  }
+
+  document.getElementById('publicSite').style.display='none';
+  document.getElementById('detailScreen').style.display='block';
+  window.scrollTo({top:0});
+}
+function closeDetail(){
+  document.getElementById('detailScreen').style.display='none';
+  document.getElementById('publicSite').style.display='block';
+  detailSiteId=null;
+}
+
+// ══════════════════════════════
+// ADMIN PROJECTS TABLE
+// ══════════════════════════════
+function renderProjTable(){
+  const tbody=document.getElementById('projBody');
+  const empty=document.getElementById('projEmpty');
+  tbody.innerHTML='';
+  if(!sites.length){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  sites.forEach((site,i)=>{
+    const hasHtml=site.files.some(f=>/\.html?$/i.test(f.name));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><div class="thumb-mini" id="at_${site.id}"></div></td>
+      <td><div class="td-name"><div><div style="font-weight:700;font-size:.84rem;">${site.name}</div><div style="font-size:.72rem;color:var(--mid);">${site.files.length} archivo${site.files.length!==1?'s':''}</div></div></div></td>
+      <td><span class="ctag" style="font-size:.62rem;">${site.category||'OTRO'}</span></td>
+      <td style="font-size:.8rem;color:var(--mid);max-width:240px;">${site.description||'—'}</td>
+      <td style="font-size:.78rem;color:var(--mid);">${site.files.map(f=>`<span class="ctag" style="margin:1px 2px;display:inline-block;">${f.name.split('.').pop()}</span>`).join('')}</td>
+      <td style="font-size:.8rem;color:var(--mid);">${site.date}</td>
+      <td><span class="pub-badge ${site.published?'pub-yes':(site.comingSoon?'pub-soon':'pub-no')}">${site.published?'Publicado':(site.comingSoon?'Soon':'Oculto')}</span>${site.comingSoon&&site.soonDate?`<div style="font-size:.65rem;color:#856404;margin-top:3px;">📅 ${fmtDate(site.soonDate)}</div>`:''}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${hasHtml?`<button class="btn btn-ghost btn-xs" onclick="openModal('${site.id}',event)">▶ Ver</button>`:''}
+          <button class="btn btn-xs ${site.published?'btn-danger':'btn-green'}" onclick="togglePub('${site.id}',event)">${site.published?'Ocultar':'Publicar'}</button>
+          <button class="btn btn-xs ${site.comingSoon?'btn-danger':'btn-ghost'}" onclick="toggleSoon('${site.id}',event)" title="${site.comingSoon?'Quitar Coming Soon':'Marcar como Coming Soon'}">${site.comingSoon?'⏳ Quitar Soon':'🔒 Soon'}</button>
+          <button class="btn btn-ghost btn-xs" onclick="openFmModal('${site.id}',event)" title="Gestionar archivos">📁</button>
+          <button class="btn btn-green btn-xs" onclick="downloadSite('${site.id}',event)">⬇</button>
+          <button class="btn btn-danger btn-xs" onclick="adminDel('${site.id}',event)">✕</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+    if(hasHtml) setTimeout(()=>{
+      const td=document.getElementById('at_'+site.id); if(!td) return;
+      const url=buildUrl(site); const iframe=document.createElement('iframe');
+      iframe.sandbox='allow-scripts'; iframe.src=url;
+      Object.assign(iframe.style,{width:'300%',height:'300%',transform:'scale(.333)',transformOrigin:'top left',border:'none',pointerEvents:'none'});
+      td.appendChild(iframe);
+    },i*60+100);
+  });
+}
+
+function togglePub(id, e){
+  if(e) e.stopPropagation();
+  const s=sites.find(s=>s.id===id); if(!s) return;
+  s.published=!s.published;
+  if(s.published){ s.comingSoon=false; s.soonDate=null; clearSoonTimer(s.id); }
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats();
+  toast(`"${s.name}" ${s.published?'publicado':'ocultado'}`,'ok');
+  pushNews(`"${s.name}" fue ${s.published?'publicado':'ocultado'}`);
+}
+function toggleSoon(id, e){
+  if(e) e.stopPropagation();
+  const s=sites.find(s=>s.id===id); if(!s) return;
+  s.comingSoon=!s.comingSoon;
+  if(s.comingSoon){ s.published=false; }
+  else { s.soonDate=null; clearSoonTimer(s.id); }
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats(); scheduleSoonTimers();
+  toast(`"${s.name}" ${s.comingSoon?'marcado como Coming Soon':'ya no es Coming Soon'}`,'ok');
+  pushNews(`"${s.name}" ${s.comingSoon?'→ Coming Soon':' dejó de ser Coming Soon'}`);
+}
+
+// ══════════════════════════════
+// AUTO-PUBLISH TIMER (soonDate)
+// ══════════════════════════════
+function scheduleSoonTimers(){
+  // Limpia timers anteriores
+  Object.values(soonTimers).forEach(clearInterval);
+  soonTimers={};
+  const now=Date.now();
+  sites.forEach(s=>{
+    if(!s.comingSoon||!s.soonDate) return;
+    const diff=s.soonDate-now;
+    if(diff<=0){
+      // Ya pasó la fecha → publicar ahora
+      autoPublishSoon(s.id);
+    } else {
+      // Programa el auto-publish
+      soonTimers[s.id]=setTimeout(()=>{ autoPublishSoon(s.id); },diff);
+    }
+  });
+}
+function clearSoonTimer(id){
+  if(soonTimers[id]){ clearTimeout(soonTimers[id]); delete soonTimers[id]; }
+}
+function autoPublishSoon(id){
+  const s=sites.find(s=>s.id===id); if(!s||!s.comingSoon) return;
+  s.comingSoon=false; s.published=true; s.soonDate=null;
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats();
+  toast(`🎉 "${s.name}" se publicó automáticamente`,'ok');
+  pushNews(`🎉 "${s.name}" se publicó automáticamente (fecha programada)`);
+}
+
+function fmtDate(ts){
+  if(!ts) return '';
+  return new Date(ts).toLocaleString('es',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function adminDel(id, e){
+  if(e) e.stopPropagation();
+  const s=sites.find(s=>s.id===id); if(!s||!confirm(`¿Eliminar "${s.name}"?`)) return;
+  if(s.blobUrl) URL.revokeObjectURL(s.blobUrl);
+  sites=sites.filter(s=>s.id!==id);
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats();
+  toast('Proyecto eliminado','ok');
+  pushNews(`Proyecto eliminado: "${s.name}"`);
+}
+function updateAdminStats(){
+  const pub=sites.filter(s=>s.published).length;
+  const soon=sites.filter(s=>s.comingSoon).length;
+  const totalFiles=sites.reduce((a,s)=>a+s.files.length,0);
+  const totalBytes=sites.reduce((a,s)=>a+s.files.reduce((b,f)=>b+(f.content?f.content.length*.75:0),0),0);
+  document.getElementById('aTotal').textContent=sites.length;
+  document.getElementById('aPub').textContent=pub+(soon?` + ${soon}⏳`:'');
+  document.getElementById('aFiles').textContent=totalFiles;
+  document.getElementById('aSize').textContent=fmt(totalBytes);
+}
+
+// ══════════════════════════════
+// PASSWORD CHANGE
+// ══════════════════════════════
+function changePassword(){
+  const cur=document.getElementById('pwCurrent').value;
+  const nw=document.getElementById('pwNew').value;
+  const cf=document.getElementById('pwConfirm').value;
+  if(cur!==getPass()){ toast('La contraseña actual es incorrecta','err'); return; }
+  if(nw.length<4){ toast('La nueva contraseña debe tener al menos 4 caracteres','err'); return; }
+  if(nw!==cf){ toast('Las contraseñas no coinciden','err'); return; }
+  setPass(nw);
+  document.getElementById('pwCurrent').value='';
+  document.getElementById('pwNew').value='';
+  document.getElementById('pwConfirm').value='';
+  toast('Contraseña actualizada ✓','ok');
+}
+function nukeAll(){
+  if(!confirm('¿Eliminar TODOS los proyectos? Esta acción no se puede deshacer.')) return;
+  sites.forEach(s=>{if(s.blobUrl) URL.revokeObjectURL(s.blobUrl);});
+  sites=[];
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats();
+  toast('Todos los proyectos eliminados','ok');
+}
+
+// ══════════════════════════════
+// FILE MANAGER MODAL
+// ══════════════════════════════
+let fmSiteId = null;
+
+function openFmModal(id, e){
+  if(e) e.stopPropagation();
+  fmSiteId = id;
+  renderFmModal();
+  document.getElementById('fmModalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeFmModal(){
+  document.getElementById('fmModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+  fmSiteId = null;
+}
+function renderFmModal(){
+  const site = sites.find(s => s.id === fmSiteId); if(!site) return;
+  document.getElementById('fmProjName').textContent = site.name;
+  const list = document.getElementById('fmList');
+  const empty = document.getElementById('fmEmpty');
+  list.innerHTML = '';
+  if(!site.files.length){ empty.style.display='block'; list.style.display='none'; return; }
+  empty.style.display = 'none'; list.style.display = 'block';
+  site.files.forEach((f, i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const dc = {html:'x-h',htm:'x-h',css:'x-c',js:'x-j'}[ext] || 'x-o';
+    const sz = f.content ? Math.round(f.content.length * 0.75) : 0;
+    const li = document.createElement('li');
+    li.className = 'fm-item';
+    li.innerHTML = `<span class="fm-dot ${dc}"></span><span class="fm-name">${f.name}</span><span class="fm-size">${fmt(sz)}</span><button class="fm-del" onclick="fmDelFile(${i})" title="Eliminar este archivo">✕</button>`;
+    list.appendChild(li);
+  });
+  const total = site.files.reduce((a,f)=>a+(f.content?f.content.length*.75:0),0);
+  document.getElementById('fmCount').textContent = `${site.files.length} archivo${site.files.length!==1?'s':''} · ${fmt(total)}`;
+}
+function fmDelFile(idx){
+  const site = sites.find(s => s.id === fmSiteId); if(!site) return;
+  const f = site.files[idx]; if(!f) return;
+  if(!confirm(`¿Eliminar "${f.name}" de este proyecto?`)) return;
+  site.files.splice(idx, 1);
+  if(site.blobUrl){ URL.revokeObjectURL(site.blobUrl); site.blobUrl = null; }
+  saveData(); renderProjTable(); renderPublic(); updateAdminStats();
+  renderFmModal();
+  toast(`"${f.name}" eliminado ✓`, 'ok');
+  // Si el proyecto se quedó sin archivos, cerrar el modal
+  if(!site.files.length){ setTimeout(closeFmModal, 800); }
+}
+
+// ══════════════════════════════
+// MODAL
+// ══════════════════════════════
+function openModal(id, e){
+  if(e) e.stopPropagation();
+  const site=sites.find(s=>s.id===id); if(!site) return;
+  const url=buildUrl(site);
+  if(!url){ toast('No se encontró HTML','err'); return; }
+  curUrl=url; curSiteId=id;
+  document.getElementById('mTitle').textContent=site.name;
+  document.getElementById('mFrame').src=url;
+  document.getElementById('mUrl').textContent=url;
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('open');
+  document.getElementById('mFrame').src='';
+  document.body.style.overflow='';
+}
+function bgClose(e){ if(e.target===document.getElementById('modalBg')) closeModal(); }
+function copyUrl(){ if(curUrl) navigator.clipboard.writeText(curUrl).then(()=>toast('URL copiada','ok')); }
+function newTab(){ if(curUrl) window.open(curUrl,'_blank'); }
+function newTabById(id, e){
+  if(e) e.stopPropagation();
+  const s=sites.find(s=>s.id===id); if(!s) return;
+  const u=buildUrl(s); if(u) window.open(u,'_blank');
+}
+
+// ══════════════════════════════
+// YOUTUBE WIDGET
+// ══════════════════════════════
+function ytExtractId(url){
+  url=url.trim();
+  let m;
+  // youtu.be/ID
+  m=url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/); if(m) return m[1];
+  // youtube.com/watch?v=ID
+  m=url.match(/[?&]v=([a-zA-Z0-9_-]{11})/); if(m) return m[1];
+  // youtube.com/embed/ID
+  m=url.match(/\/embed\/([a-zA-Z0-9_-]{11})/); if(m) return m[1];
+  // youtube.com/shorts/ID
+  m=url.match(/\/shorts\/([a-zA-Z0-9_-]{11})/); if(m) return m[1];
+  // bare ID (11 chars)
+  m=url.match(/^([a-zA-Z0-9_-]{11})$/); if(m) return m[1];
+  return null;
+}
+function ytLoad(){
+  const input=document.getElementById('ytUrlInput'); if(!input) return;
+  const id=ytExtractId(input.value);
+  if(!id){ toast('Link de YouTube no válido','err'); return; }
+  const frame=document.getElementById('ytFrame');
+  const wrap=document.getElementById('ytFrameWrap');
+  const titleEl=document.getElementById('ytFrameTitle');
+  if(!frame||!wrap) return;
+  frame.src=`https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`;
+  if(titleEl) titleEl.textContent='youtube.com · '+id;
+  wrap.style.display='block';
+  wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function ytPreview(){
+  // Auto-load on paste if a full URL is detected
+  const input=document.getElementById('ytUrlInput'); if(!input) return;
+  const val=input.value.trim();
+  if(val.includes('youtu')) ytLoad();
+}
+function ytClear(){
+  const frame=document.getElementById('ytFrame');
+  const wrap=document.getElementById('ytFrameWrap');
+  const input=document.getElementById('ytUrlInput');
+  if(frame) frame.src='';
+  if(wrap) wrap.style.display='none';
+  if(input) input.value='';
+}
+
+// ══════════════════════════════
+// POLÍTICA DE PRIVACIDAD
+// ══════════════════════════════
+function openPrivacy(){
+  const bg=document.getElementById('privacyBg');
+  const dateEl=document.getElementById('privacyDate');
+  const emailEl=document.getElementById('privacyEmail');
+  if(dateEl) dateEl.textContent=new Date().toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'});
+  const email=getEmail();
+  if(emailEl&&email){ emailEl.href='mailto:'+email; emailEl.textContent=email; }
+  bg.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePrivacy(){
+  document.getElementById('privacyBg').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closePrivacy(); }});
+
+// ══════════════════════════════
+// TOAST
+// ══════════════════════════════
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  document.getElementById('tMsg').textContent=msg;
+  el.className='show '+type;
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.className='',2800);
+}
+
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function fmt(b){ if(b<1024) return Math.round(b)+'B'; if(b<1048576) return (b/1024).toFixed(1)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
+function mime(n){ const e=n.split('.').pop().toLowerCase(); return{html:'text/html',htm:'text/html',css:'text/css',js:'application/javascript',svg:'image/svg+xml',png:'image/png',jpg:'image/jpeg',gif:'image/gif',webp:'image/webp'}[e]||'text/plain'; }
+function guessName(arr){ const h=arr.find(f=>/\.html?$/i.test(f.name)); return h?h.name.replace(/\.html?$/i,''):'Proyecto '+(sites.length+1); }
+function wait(ms=0){ return new Promise(r=>setTimeout(r,ms)); }
+
+// Escape key handled above
+
+// ══════════════════════════════
+// IA — GENERADOR DE MINI-WEBS (Claude + Gemini)
+// ══════════════════════════════
+const AI_KEY        = 'mws_ai_key_v1';
+const AI_KEY_GEMINI = 'mws_ai_key_gemini_v1';
+const AI_PROVIDER   = 'mws_ai_provider_v1';
+let _aiGeneratedHtml = null;
+let _aiProvider = 'claude'; // 'claude' | 'gemini'
+
+function loadAiProvider(){ return localStorage.getItem(AI_PROVIDER)||'claude'; }
+function saveAiProviderPref(p){ localStorage.setItem(AI_PROVIDER, p); }
+function loadAiKey(p){ return localStorage.getItem(p==='gemini'?AI_KEY_GEMINI:AI_KEY)||''; }
+
+function setAiProvider(p){
+  _aiProvider = p;
+  saveAiProviderPref(p);
+  // toggle buttons style
+  const bc = document.getElementById('providerBtnClaude');
+  const bg = document.getElementById('providerBtnGemini');
+  const hintEl = document.getElementById('aiProviderHint');
+  if(p==='claude'){
+    bc.style.background='var(--ink)'; bc.style.color='var(--cream)';
+    bg.style.background='transparent'; bg.style.color='var(--mid)';
+    document.getElementById('aiKeyRowClaude').style.display='';
+    document.getElementById('aiKeyRowGemini').style.display='none';
+    hintEl.innerHTML='Usando <strong>Claude</strong> (Anthropic) · <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);text-decoration:none;">Obtener clave →</a>';
+  } else {
+    bg.style.background='var(--ink)'; bg.style.color='var(--cream)';
+    bc.style.background='transparent'; bc.style.color='var(--mid)';
+    document.getElementById('aiKeyRowGemini').style.display='';
+    document.getElementById('aiKeyRowClaude').style.display='none';
+    hintEl.innerHTML='Usando <strong>Gemini</strong> (Google AI Studio) · <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);text-decoration:none;">Obtener clave →</a>';
+  }
+  renderAiKeyStatus(p);
+}
+
+function saveAiKey(p){
+  const inputId = p==='gemini' ? 'aiApiKeyGemini' : 'aiApiKey';
+  const v = document.getElementById(inputId).value.trim();
+  if(!v){ toast('Introduce una clave de API primero','err'); return; }
+  if(p==='claude' && !v.startsWith('sk-ant-')){ toast('La clave de Claude debe empezar por sk-ant-…','err'); return; }
+  if(p==='gemini' && !v.startsWith('AIza')){ toast('La clave de Gemini suele empezar por AIza…','err'); return; }
+  localStorage.setItem(p==='gemini'?AI_KEY_GEMINI:AI_KEY, v);
+  toast('Clave de API guardada ✓','ok');
+  renderAiKeyStatus(p);
+}
+
+function renderAiKeyStatus(p){
+  const k = loadAiKey(p);
+  const elId = p==='gemini' ? 'aiKeyStatusGemini' : 'aiKeyStatusClaude';
+  const el = document.getElementById(elId);
+  if(!el) return;
+  if(k){ el.textContent='✓ Clave configurada: '+k.slice(0,14)+'…'; el.style.color='var(--green)'; }
+  else { el.textContent='Sin clave. Consíguela gratis en el portal de tu proveedor.'; el.style.color='var(--mid)'; }
+}
+
+function aiKeyChanged(p){
+  const elId = p==='gemini' ? 'aiKeyStatusGemini' : 'aiKeyStatusClaude';
+  const el = document.getElementById(elId);
+  if(el) el.textContent='';
+}
+
+function toggleAiKeyVisibility(inputId, btnId){
+  const inp = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈 Ocultar'; }
+  else { inp.type='password'; btn.textContent='👁 Ver'; }
+}
+
+// Fill API key inputs when settings opens
+const _origFillSettings = fillSettingsFields;
+fillSettingsFields = function(){
+  _origFillSettings();
+  const kc = loadAiKey('claude');
+  const kg = loadAiKey('gemini');
+  const inpC = document.getElementById('aiApiKey');
+  const inpG = document.getElementById('aiApiKeyGemini');
+  if(inpC) inpC.value = kc||'';
+  if(inpG) inpG.value = kg||'';
+  _aiProvider = loadAiProvider();
+  setAiProvider(_aiProvider);
+};
+
+// ── GENERATE ──
+async function aiGenerateSite(){
+  const key = loadAiKey(_aiProvider);
+  if(!key){ toast('Primero guarda tu clave de API ('+(_aiProvider==='claude'?'Claude':'Gemini')+')','err'); return; }
+  const prompt = (document.getElementById('aiPrompt').value||'').trim();
+  if(!prompt){ toast('Escribe una descripción para la mini-web','err'); return; }
+
+  const btn = document.getElementById('aiBtnGenerate');
+  const spinner = document.getElementById('aiSpinner');
+  const status = document.getElementById('aiGenStatus');
+  btn.disabled=true; spinner.style.display='inline';
+  status.textContent='Generando con '+(_aiProvider==='claude'?'Claude':'Gemini')+'… puede tardar unos segundos.';
+  status.style.color='var(--mid)';
+
+  const systemPrompt = `Eres un experto en HTML/CSS/JS. Crea mini-webs HTML completas y autocontenidas (todo en un archivo, sin dependencias externas salvo Google Fonts si encaja).
+REGLAS:
+- Devuelve ÚNICAMENTE el código HTML completo, desde <!DOCTYPE html> hasta </html>.
+- Sin explicaciones, sin markdown, sin backticks.
+- Estilos en <style>, scripts en <script>.
+- Diseño moderno, responsive, con animaciones CSS si encajan.
+- Optimizado para móvil (meta viewport incluido).
+- Contenido en español salvo que se pida otro idioma.`;
+
+  try {
+    let html = '';
+    if(_aiProvider==='claude'){
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': key,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body: JSON.stringify({
+          model:'claude-sonnet-4-6',
+          max_tokens:4096,
+          system: systemPrompt,
+          messages:[{role:'user',content:'Crea esta mini-web: '+prompt}]
+        })
+      });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message||'Error de API Claude');
+      html = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('').trim();
+    } else {
+      // Gemini 1.5 Flash
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+      const res = await fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          systemInstruction:{ parts:[{text: systemPrompt}] },
+          contents:[{ role:'user', parts:[{text:'Crea esta mini-web: '+prompt}] }],
+          generationConfig:{ maxOutputTokens:4096, temperature:0.9 }
+        })
+      });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message||'Error de API Gemini');
+      html = ((data.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+    }
+
+    // strip markdown fences if model adds them
+    html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'').trim();
+    if(!html.toLowerCase().includes('<!doctype')) throw new Error('La IA no devolvió HTML válido. Intenta de nuevo.');
+
+    _aiGeneratedHtml = html;
+    document.getElementById('aiPreviewFrame').srcdoc = html;
+    document.getElementById('aiPreviewWrap').style.display='block';
+    status.textContent='✓ Mini-web generada. Revisa la vista previa y pulsa Publicar.';
+    status.style.color='var(--green)';
+    toast('¡Mini-web generada! 🎉','ok');
+  } catch(err){
+    status.textContent='Error: '+err.message;
+    status.style.color='var(--red,#c0392b)';
+    toast('Error: '+err.message,'err');
+  } finally {
+    btn.disabled=false; spinner.style.display='none';
+  }
+}
+
+function aiPublishGenerated(){
+  if(!_aiGeneratedHtml){ toast('No hay mini-web generada todavía','err'); return; }
+  const nameEl = document.getElementById('aiProjectName');
+  const catEl  = document.getElementById('aiCategory');
+  const name   = (nameEl?nameEl.value.trim():'')||('IA · '+new Date().toLocaleDateString('es'));
+  const cat    = catEl?catEl.value:'OTRO';
+  const blob   = new Blob([_aiGeneratedHtml],{type:'text/html'});
+  const fileName = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'')+'.html';
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const b64 = e.target.result.split(',')[1];
+    const id  = 'ai_'+Date.now();
+    const site = {
+      id, name, date:Date.now(), category:cat,
+      description:(document.getElementById('aiPrompt').value||'').slice(0,120),
+      published:true, comingSoon:false, soonDate:null,
+      ref:'AI-'+Math.random().toString(36).slice(2,7).toUpperCase(),
+      files:[{name:fileName,type:'text/html',size:blob.size,data:b64}]
+    };
+    sites.unshift(site);
+    saveData(); renderPublic(); updateAdminStats();
+    toast('Mini-web publicada en el catálogo ✓','ok');
+    aiDiscardGenerated();
+    adminNav('projects', document.querySelectorAll('.sidebar-item')[1]);
+  };
+  reader.readAsDataURL(blob);
+}
+
+function aiDiscardGenerated(){
+  _aiGeneratedHtml=null;
+  document.getElementById('aiPreviewWrap').style.display='none';
+  document.getElementById('aiPreviewFrame').srcdoc='';
+  document.getElementById('aiGenStatus').textContent='';
+  document.getElementById('aiGenStatus').style.color='';
+}
+
+// Init provider on load
+(function(){ _aiProvider=loadAiProvider(); })();
+
+// ══════════════════════════════
+// PAGE LOADER SYSTEM
+// ══════════════════════════════
+let _loaderTimer = null;
+let _topBarPct = 0;
+let _topBarTimer = null;
+
+function showLoader(label='Cargando…', minMs=400){
+  const el = document.getElementById('pageLoader');
+  const lbl = document.getElementById('plLabel');
+  const bar = document.getElementById('topBar');
+  const fill = document.getElementById('plTrackFill');
+  if(lbl) lbl.textContent = label;
+  if(el) el.classList.add('active');
+  // reset inner track
+  if(fill){ fill.style.transition='none'; fill.style.width='0%'; }
+  // top bar
+  _topBarPct = 0;
+  if(bar){ bar.style.width='0%'; bar.classList.add('running'); }
+  clearInterval(_topBarTimer);
+  _topBarTimer = setInterval(()=>{
+    _topBarPct = Math.min(88, _topBarPct + (Math.random()*9+4));
+    if(bar) bar.style.width = _topBarPct+'%';
+    if(fill){ fill.style.transition='width .25s ease'; fill.style.width=_topBarPct+'%'; }
+  }, 110);
+  clearTimeout(_loaderTimer);
+  return new Promise(res => { _loaderTimer = setTimeout(res, minMs); });
+}
+
+function hideLoader(){
+  clearTimeout(_loaderTimer);
+  clearInterval(_topBarTimer);
+  const el = document.getElementById('pageLoader');
+  const bar = document.getElementById('topBar');
+  const fill = document.getElementById('plTrackFill');
+  if(bar){ bar.style.width='100%'; setTimeout(()=>{ bar.classList.remove('running'); bar.style.width='0%'; },300); }
+  if(fill){ fill.style.transition='width .2s ease'; fill.style.width='100%'; }
+  if(el){ setTimeout(()=>el.classList.remove('active'),180); }
+}
+
+// ── Wrap navigation functions with loader ──
+const _origOpenDetail = openDetail;
+window.openDetail = function(id){
+  showLoader('Abriendo proyecto…', 350).then(()=>{ _origOpenDetail(id); hideLoader(); });
+};
+
+const _origCloseDetail = closeDetail;
+window.closeDetail = function(){
+  showLoader('Volviendo al catálogo…', 280).then(()=>{ _origCloseDetail(); hideLoader(); });
+};
+
+const _origGoAdmin = goAdmin;
+window.goAdmin = function(){
+  showLoader('Entrando al panel…', 320).then(()=>{ _origGoAdmin(); hideLoader(); });
+};
+
+const _origExitAdmin = exitAdmin;
+window.exitAdmin = function(){
+  showLoader('Saliendo del panel…', 280).then(()=>{ _origExitAdmin(); hideLoader(); });
+};
+
+const _origDoLogin = doLogin;
+window.doLogin = function(){
+  const v = document.getElementById('pwInput').value;
+  if(v === getPass()){
+    showLoader('Verificando acceso…', 500).then(()=>{ _origDoLogin(); hideLoader(); });
+  } else {
+    _origDoLogin(); // wrong password — no loader, show error instantly
+  }
+};
+
+const _origDownloadSite = downloadSite;
+window.downloadSite = async function(id, e){
+  if(e) e.stopPropagation();
+  await showLoader('Preparando descarga…', 600);
+  _origDownloadSite(id);
+  hideLoader();
+  toast('Descarga lista ✓','ok');
+};
+
+const _origDownloadDetailCustom = downloadDetailCustom;
+window.downloadDetailCustom = async function(){
+  await showLoader('Aplicando cambios…', 500);
+  hideLoader();
+  _origDownloadDetailCustom();
+};
+
+const _origShowAdmin = showAdmin;
+window.showAdmin = function(){
+  _origShowAdmin();
+  hideLoader();
+};
+
+const _origCancelLogin = cancelLogin;
+window.cancelLogin = function(){
+  showLoader('Volviendo al sitio…', 250).then(()=>{ _origCancelLogin(); hideLoader(); });
+};
+
+const _origShowSection = showSection;
+window.showSection = function(sec, el){
+  const labels = { home:'Cargando inicio…', cat:'Cargando catálogo…' };
+  const page = document.getElementById('page-'+sec);
+  // Si ya estamos en esa página, no mostrar loader (evita parpadeo innecesario)
+  if(page && page.classList.contains('active')){ _origShowSection(sec, el); return; }
+  showLoader(labels[sec] || 'Cargando…', 350).then(()=>{ _origShowSection(sec, el); hideLoader(); });
+};
+
+</script>
+</body>
+</html>
